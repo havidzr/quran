@@ -146,13 +146,13 @@ const Chapter: NextPage<ChapterProps> = ({
     return !isChapter
       ? versesResponse.verses[0].textImlaeiSimple
       : t('chapter:meta-description', {
-        transliteratedName: chapterResponse.chapter.transliteratedName,
-        translatedName: chapterResponse.chapter.translatedName as string,
-        revelationPlace: t(`surah-info:${chapterResponse.chapter.revelationPlace}`),
-        chapterOrder: toLocalizedNumber(Number(chapterResponse.chapter.id), lang),
-        localeName: getLocaleName(lang),
-        versesCount: toLocalizedNumber(chapterResponse.chapter.versesCount, lang),
-      });
+          transliteratedName: chapterResponse.chapter.transliteratedName,
+          translatedName: chapterResponse.chapter.translatedName as string,
+          revelationPlace: t(`surah-info:${chapterResponse.chapter.revelationPlace}`),
+          chapterOrder: toLocalizedNumber(Number(chapterResponse.chapter.id), lang),
+          localeName: getLocaleName(lang),
+          versesCount: toLocalizedNumber(chapterResponse.chapter.versesCount, lang),
+        });
   };
 
   return (
