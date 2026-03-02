@@ -4,7 +4,6 @@ import { getDefaultWordFields, getMushafId, ITEMS_PER_PAGE, makeUrl } from './ap
 import { CUSTOM_TAFSIRS } from './customTafsirs';
 import stringify from './qs-stringify';
 
-
 import { DEFAULT_RECITER } from '@/redux/defaultSettings/defaultSettings';
 import {
   getReadingPreferencesInitialState,
