@@ -44,6 +44,8 @@ import 'src/styles/theme.scss';
 import 'src/styles/global.scss';
 import 'src/styles/variables.scss';
 
+const EMPTY_CHAPTERS_DATA = {};
+
 function MyApp({ Component, pageProps }): JSX.Element {
   const router = useRouter();
   const { locale } = router;
@@ -81,7 +83,7 @@ function MyApp({ Component, pageProps }): JSX.Element {
       <DirectionProvider dir={getDir(locale)}>
         <TooltipProvider>
           <ToastContainerProvider>
-            <DataContext.Provider value={pageProps.chaptersData || {}}>
+            <DataContext.Provider value={pageProps.chaptersData || EMPTY_CHAPTERS_DATA}>
               <AudioPlayerMachineProvider>
                 <ReduxProvider locale={locale}>
                   <ThemeProvider>
