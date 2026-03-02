@@ -44,6 +44,11 @@ const PlayChapterAudioButton: React.FC<Props> = ({ chapterId }) => {
     QueryParam.RECITER,
   );
 
+  // Guard against undefined chapterData during SSR when DataContext is not yet available
+  if (!chapterData) {
+    return null;
+  }
+
   const play = () => {
     logButtonClick('chapter_header_play_audio');
     audioService.send({
