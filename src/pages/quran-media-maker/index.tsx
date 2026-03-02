@@ -253,7 +253,7 @@ const MediaMaker: NextPage<MediaMaker> = ({
 
   const inputProps = useMemo(() => {
     return {
-      verses: verseData.verses,
+      verses: verseData?.verses || [],
       audio: audioData,
       timestamps,
       backgroundColor,
@@ -274,7 +274,7 @@ const MediaMaker: NextPage<MediaMaker> = ({
       translations,
     };
   }, [
-    verseData.verses,
+    verseData?.verses,
     translations,
     audioData,
     timestamps,
