@@ -81,7 +81,7 @@ function MyApp({ Component, pageProps }): JSX.Element {
       <DirectionProvider dir={getDir(locale)}>
         <TooltipProvider>
           <ToastContainerProvider>
-            <DataContext.Provider value={pageProps.chaptersData}>
+            <DataContext.Provider value={pageProps.chaptersData || {}}>
               <AudioPlayerMachineProvider>
                 <ReduxProvider locale={locale}>
                   <ThemeProvider>
