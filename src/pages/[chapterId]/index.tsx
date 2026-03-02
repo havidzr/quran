@@ -179,10 +179,11 @@ const Chapter: NextPage<ChapterProps> = ({
 const AYAH_KURSI_SLUGS = ['ayatul-kursi', 'آیت الکرسی'];
 
 export const getStaticProps: GetStaticProps = async ({ params, locale }) => {
+  // Load chapters data first - this is a local JSON import that should always succeed
+  const chaptersData = await getAllChaptersData(locale);
   try {
     let chapterIdOrVerseKeyOrSlug = String(params.chapterId);
     let isValidChapter = isValidChapterId(chapterIdOrVerseKeyOrSlug);
-    const chaptersData = await getAllChaptersData(locale);
     const isValidRanges = isRangesStringValid(chaptersData, chapterIdOrVerseKeyOrSlug);
     // initialize the value as if it's chapter
     let chapterId = chapterIdOrVerseKeyOrSlug;
@@ -250,7 +251,7 @@ export const getStaticProps: GetStaticProps = async ({ params, locale }) => {
           versesResponse,
           quranReaderDataType: QuranReaderDataType.Ranges,
         },
-        revalidate: ONE_WEEK_REVALIDATION_PERIOD_SECONDS, // chapters will be generated at runtime if not found in the cache, then cached for subsequent requests for 7 days.
+        revalidate: ONE_WEEK_REVALIDATION_PERIOD_SECONDS,
       };
     }
     // if it's a verseKey
@@ -306,14 +307,14 @@ export const getStaticProps: GetStaticProps = async ({ params, locale }) => {
           ? QuranReaderDataType.Chapter
           : QuranReaderDataType.Verse,
       },
-      revalidate: ONE_WEEK_REVALIDATION_PERIOD_SECONDS, // chapters will be generated at runtime if not found in the cache, then cached for subsequent requests for 7 days.
+      revalidate: ONE_WEEK_REVALIDATION_PERIOD_SECONDS,
     };
   } catch (error) {
     // eslint-disable-next-line no-console
     console.error('[getStaticProps] Error fetching chapter data:', error);
     return {
-      props: { hasError: true },
-      revalidate: REVALIDATION_PERIOD_ON_ERROR_SECONDS, // 35 seconds will be enough time before we re-try generating the page again.
+      props: { chaptersData, hasError: true },
+      revalidate: REVALIDATION_PERIOD_ON_ERROR_SECONDS,
     };
   }
 };
