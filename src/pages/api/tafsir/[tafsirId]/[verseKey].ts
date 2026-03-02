@@ -1,3 +1,4 @@
+/* eslint-disable react-func/max-lines-per-function */
 import fs from 'fs';
 import path from 'path';
 
@@ -16,8 +17,22 @@ export default function handler(req, res) {
 
     if (tafsirId === 'id-tafsir-tahlili' || tafsirId === 'id-tafsir-ringkas-kemenag') {
         try {
-            const kemenagPath = path.join(process.cwd(), 'public', 'data', 'tafsir', 'kemenag', `${chapter}.json`);
-            const tahliliPath = path.join(process.cwd(), 'public', 'data', 'tafsir', 'tahlili', `${chapter}.json`);
+            const kemenagPath = path.join(
+                process.cwd(),
+                'public',
+                'data',
+                'tafsir',
+                'kemenag',
+                `${chapter}.json`,
+            );
+            const tahliliPath = path.join(
+                process.cwd(),
+                'public',
+                'data',
+                'tafsir',
+                'tahlili',
+                `${chapter}.json`,
+            );
 
             let kemenagText = '';
             let tahliliText = '';
@@ -36,12 +51,11 @@ export default function handler(req, res) {
                 data: {
                     tafsir: {
                         tahlili: tahliliText,
-                        wajiz: kemenagText
-                    }
-                }
+                        wajiz: kemenagText,
+                    },
+                },
             });
         } catch (error) {
-            console.error('Error reading tafsir files:', error);
             return res.status(500).json({ error: 'Internal Server Error while reading local tafsir' });
         }
     }
