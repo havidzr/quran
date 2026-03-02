@@ -47,15 +47,40 @@ export const getAllChaptersData = (
   });
 };
 
+const DUMMY_CHAPTER: Chapter = {
+  id: 1,
+  localizedId: '',
+  versesCount: 0,
+  bismillahPre: false,
+  revelationOrder: 0,
+  revelationPlace: '',
+  pages: [],
+  nameComplex: '',
+  transliteratedName: '',
+  nameArabic: '',
+  translatedName: '',
+  defaultSlug: '',
+  slug: '',
+};
+
 /**
- * Get chapter data by id from the json file
+ * Get chapter data by id from the json file.
+ * Returns a safe dummy object if chaptersData is null/undefined or if chapter doesn't exist, preventing client-side crashes.
  *
- * @param {ChaptersData} chapters
- * @param {string} id
+ * @param {ChaptersData | null | undefined} chapters
+ * @param {string | number} id
  * @returns {Chapter} chapter
  */
-export const getChapterData = (chapters: ChaptersData, id: string): Chapter =>
-  chapters[formatStringNumber(id)];
+export const getChapterData = (
+  chapters: ChaptersData | null | undefined,
+  id: string | number,
+): Chapter => {
+  if (!chapters) {
+    return { ...DUMMY_CHAPTER, id: Number(id) || 1 };
+  }
+  const chapter = chapters[formatStringNumber(String(id))];
+  return chapter || { ...DUMMY_CHAPTER, id: Number(id) || 1 };
+};
 
 /**
  * Given a pageId, get chapter ids from a json file
