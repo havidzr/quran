@@ -191,14 +191,7 @@ export const makeTafsirContentUrl = async (
     ...getMushafId(options.quranFont, options.mushafLines),
   };
   if (tafsirId === 'id-tafsir-tahlili' || tafsirId === 'id-tafsir-ringkas-kemenag') {
-    const quranApiUrl = `https://api.quran.com/api/v4/verses/by_key/${verseKey}`;
-    const quranApiResponse = await fetch(quranApiUrl);
-    if (!quranApiResponse.ok) {
-      throw new Error('Error fetching verse from Quran.com API');
-    }
-    const quranApiData = await quranApiResponse.json();
-    const verseId = quranApiData.verse.id;
-    return `https://web-api.qurankemenag.net/quran-tafsir/${verseId}`;
+    return `/api/tafsir/${tafsirId}/${verseKey}`;
   }
   return makeUrl(`/tafsirs/${tafsirId}/by_ayah/${verseKey}`, params);
 };
