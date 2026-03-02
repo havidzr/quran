@@ -11,6 +11,7 @@ import styles from '@/components/QuranReader/TranslationView/TranslationViewCell
 import Button, { ButtonShape, ButtonSize, ButtonVariant } from '@/dls/Button/Button';
 import TafsirIcon from '@/icons/book-open.svg';
 import { selectSelectedTafsirs } from '@/redux/slices/QuranReader/tafsirs';
+import { INDONESIAN_KEMENAG_TAFSIR } from '@/utils/customTafsirs';
 import { logButtonClick, logEvent } from '@/utils/eventLogger';
 import { fakeNavigate, getVerseSelectedTafsirNavigationUrl } from '@/utils/navigation';
 import { getVerseAndChapterNumbersFromKey } from '@/utils/verse';
@@ -85,7 +86,7 @@ const TafsirButton: React.FC<Props> = ({
         shouldRender={isContentModalOpen}
         initialChapterId={chapterId.toString()}
         initialVerseNumber={verseNumber.toString()}
-        initialTafsirIdOrSlug="id-tafsir-ringkas-kemenag"
+        initialTafsirIdOrSlug={INDONESIAN_KEMENAG_TAFSIR.slug}
         scrollToTop={() => {
           contentModalRef.current.scrollToTop();
         }}

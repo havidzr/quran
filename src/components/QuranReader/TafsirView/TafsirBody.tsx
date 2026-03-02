@@ -30,6 +30,7 @@ import Verse from '@/types/Verse';
 import { makeTafsirContentUrl, makeTafsirsUrl } from '@/utils/apiPaths';
 import { textToBlob } from '@/utils/blob';
 import copyText from '@/utils/copyText';
+import { INDONESIAN_KEMENAG_TAFSIR } from '@/utils/customTafsirs';
 import {
   logButtonClick,
   logEvent,
@@ -192,17 +193,7 @@ const TafsirBody = ({
     if (tafsirSelectionList) {
       let firstTafsirOfLanguage: TafsirInfo | null = null;
       if (newLang === 'indonesian') {
-        firstTafsirOfLanguage = {
-          id: 820,
-          name: 'Tafsir Ringkas Kemenag',
-          authorName: 'Kementrian Agama Republik Indonesia',
-          slug: 'id-tafsir-ringkas-kemenag',
-          languageName: 'indonesian',
-          translatedName: {
-            name: 'Tafsir Ringkas Kemenag',
-            languageName: 'indonesian',
-          },
-        };
+        firstTafsirOfLanguage = INDONESIAN_KEMENAG_TAFSIR as any;
       } else {
         firstTafsirOfLanguage = getFirstTafsirOfLanguage(tafsirSelectionList, newLang);
       }
@@ -307,17 +298,6 @@ const TafsirBody = ({
         // setTafsirText(text);
         // eslint-disable-next-line prefer-destructuring
         languageId = data.tafsir.languageId;
-      } else if (data?.data) {
-        if (selectedTafsirIdOrSlug === 'id-tafsir-tahlili') {
-          text = data.data.tafsir.tahlili.replace(/\n/g, '<br></br>');
-
-          // setTafsirText(text);
-        } else if (selectedTafsirIdOrSlug === 'id-tafsir-ringkas-kemenag') {
-          text = data.data.tafsir.wajiz.replace(/\n/g, '<br></br>');
-
-          // setTafsirText(text);
-        }
-        languageId = 67;
       }
 
       // eslint-disable-next-line react-hooks/exhaustive-deps

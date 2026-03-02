@@ -1,7 +1,9 @@
 import { decamelizeKeys } from 'humps';
 
 import { getDefaultWordFields, getMushafId, ITEMS_PER_PAGE, makeUrl } from './api';
+import { CUSTOM_TAFSIRS } from './customTafsirs';
 import stringify from './qs-stringify';
+
 
 import { DEFAULT_RECITER } from '@/redux/defaultSettings/defaultSettings';
 import {
@@ -16,7 +18,7 @@ export const DEFAULT_VERSES_PARAMS = {
   words: true,
   translationFields: 'resource_name,language_id', // needed to show the name of the translation
   perPage: ITEMS_PER_PAGE,
-  fields: `${QuranFont.Uthmani},chapter_id,hizb_number,text_imlaei_simple`, // we need text_uthmani field when copying the verse. text_imlaei_simple is for SEO description meta tag. Also the chapter_id for when we want to share the verse or navigate to Tafsir, hizb_number is for when we show the context menu.
+  fields: `${QuranFont.Uthmani}, chapter_id, hizb_number, text_imlaei_simple`, // we need text_uthmani field when copying the verse. text_imlaei_simple is for SEO description meta tag. Also the chapter_id for when we want to share the verse or navigate to Tafsir, hizb_number is for when we show the context menu.
 };
 
 /**
@@ -55,13 +57,13 @@ export const makeVersesUrl = (
   id: string | number,
   currentLocale: string,
   params?: Record<string, unknown>,
-) => makeUrl(`/verses/by_chapter/${id}`, getVersesParams(currentLocale, params));
+) => makeUrl(`/ verses / by_chapter / ${id} `, getVersesParams(currentLocale, params));
 
 export const makeByRangeVersesUrl = (currentLocale: string, params?: Record<string, unknown>) =>
-  makeUrl(`/verses/by_range`, getVersesParams(currentLocale, params));
+  makeUrl(`/ verses / by_range`, getVersesParams(currentLocale, params));
 
 export const makeVersesFilterUrl = (params?: Record<string, unknown>) =>
-  makeUrl(`/verses/filter`, { ...params });
+  makeUrl(`/ verses / filter`, { ...params });
 
 /**
  * Compose the url for the translations API.
@@ -100,7 +102,7 @@ export const makeAvailableRecitersUrl = (locale: string, fields?: string[]): str
   makeUrl('/audio/reciters', { locale, fields });
 
 export const makeReciterUrl = (reciterId: string, locale: string): string =>
-  makeUrl(`/audio/reciters/${reciterId}`, {
+  makeUrl(`/ audio / reciters / ${reciterId} `, {
     locale,
     fields: ['profile_picture', 'cover_image', 'bio'],
   });
@@ -118,7 +120,7 @@ export const makeChapterAudioDataUrl = (
   reciterId: number,
   chapter: number,
   segments: boolean,
-): string => makeUrl(`/audio/reciters/${reciterId}/audio_files`, { chapter, segments });
+): string => makeUrl(`/ audio / reciters / ${reciterId}/audio_files`, { chapter, segments });
 
 export const makeAudioTimestampsUrl = (reciterId: number, verseKey: string) =>
   makeUrl(`/audio/reciters/${reciterId}/timestamp?verse_key=${verseKey}`);
@@ -190,7 +192,10 @@ export const makeTafsirContentUrl = async (
     ...getDefaultWordFields(options.quranFont),
     ...getMushafId(options.quranFont, options.mushafLines),
   };
-  if (tafsirId === 'id-tafsir-tahlili' || tafsirId === 'id-tafsir-ringkas-kemenag') {
+  const isCustomTafsir = CUSTOM_TAFSIRS.some(
+    (tafsir) => tafsir.slug === tafsirId || tafsir.id.toString() === tafsirId.toString(),
+  );
+  if (isCustomTafsir) {
     return `/api/tafsir/${tafsirId}/${verseKey}`;
   }
   return makeUrl(`/tafsirs/${tafsirId}/by_ayah/${verseKey}`, params);
