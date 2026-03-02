@@ -295,6 +295,8 @@ const MediaMaker: NextPage<MediaMaker> = ({
 
   useEffect(() => {
     setVideoFileReady(false);
+    if (!inputProps?.video?.videoSrc) return;
+
     // {@see https://www.remotion.dev/docs/troubleshooting/player-flicker#option-6-prefetching-as-base64-to-avoid-network-request-and-local-http-server}
     const method = isAppleWebKit() ? 'base64' : 'blob-url';
     const { waitUntilDone: waitUntilVideoDone } = prefetch(
@@ -316,6 +318,8 @@ const MediaMaker: NextPage<MediaMaker> = ({
 
   useEffect(() => {
     setAudioFileReady(false);
+    if (!inputProps?.audio?.audioUrl) return;
+
     // {@see https://www.remotion.dev/docs/troubleshooting/player-flicker#option-6-prefetching-as-base64-to-avoid-network-request-and-local-http-server}
     const method = isAppleWebKit() ? 'base64' : 'blob-url';
     const { waitUntilDone: waitUntilAudioDone } = prefetch(inputProps.audio.audioUrl, {
