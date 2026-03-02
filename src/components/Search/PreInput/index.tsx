@@ -32,7 +32,7 @@ const PreInput: React.FC<Props> = ({ onSearchKeywordClicked, isSearchDrawer }) =
   const SEARCH_FOR_KEYWORDS = [
     `${t('juz')} ${toLocalizedNumber(1, lang)}`,
     `${t('page')} ${toLocalizedNumber(1, lang)}`,
-    getChapterData(chaptersData, '36').transliteratedName,
+    getChapterData(chaptersData, '36')?.transliteratedName,
     toLocalizedNumber(36, lang),
     toLocalizedVerseKey('2:255', lang),
   ];
@@ -44,7 +44,8 @@ const PreInput: React.FC<Props> = ({ onSearchKeywordClicked, isSearchDrawer }) =
           {Object.keys(POPULAR_SEARCH_QUERIES).map((popularSearchQuery) => {
             const chapterId = POPULAR_SEARCH_QUERIES[popularSearchQuery];
             const url = getSurahNavigationUrl(POPULAR_SEARCH_QUERIES[popularSearchQuery]);
-            const chapterData = getChapterData(chaptersData, chapterId);
+            const chapterData = getChapterData(chaptersData, String(chapterId));
+            if (!chapterData) return null;
             return (
               <Link href={url} key={url} className={styles.popularSearchItem}>
                 <SearchItem
