@@ -78,12 +78,12 @@ interface MediaMaker {
 
 const MediaMaker: NextPage<MediaMaker> = ({
   hasError,
-  chaptersData,
-  englishChaptersList,
-  reciters,
-  verses: defaultVerses,
-  audio: defaultAudio,
-  translationsData,
+  chaptersData = {},
+  englishChaptersList = {},
+  reciters = [],
+  verses: defaultVerses = { verses: [], pagination: null },
+  audio: defaultAudio = { verseTimings: [], duration: 0 } as any,
+  translationsData = [],
 }) => {
   const { t, lang } = useTranslation('common');
   const mediaSettings = useGetMediaSettings(reciters, translationsData);
