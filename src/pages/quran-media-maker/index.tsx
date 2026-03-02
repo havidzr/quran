@@ -300,7 +300,7 @@ const MediaMaker: NextPage<MediaMaker> = ({
     // {@see https://www.remotion.dev/docs/troubleshooting/player-flicker#option-6-prefetching-as-base64-to-avoid-network-request-and-local-http-server}
     const method = isAppleWebKit() ? 'base64' : 'blob-url';
     const { waitUntilDone: waitUntilVideoDone } = prefetch(
-      staticFile(`/publicMin${inputProps.video.videoSrc}`),
+      staticFile(`/publicMin${inputProps?.video?.videoSrc}`),
       { method },
     );
 
@@ -314,7 +314,7 @@ const MediaMaker: NextPage<MediaMaker> = ({
         cancelRender(e);
       });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [inputProps.video.videoSrc]);
+  }, [inputProps?.video?.videoSrc]);
 
   useEffect(() => {
     setAudioFileReady(false);
@@ -322,7 +322,7 @@ const MediaMaker: NextPage<MediaMaker> = ({
 
     // {@see https://www.remotion.dev/docs/troubleshooting/player-flicker#option-6-prefetching-as-base64-to-avoid-network-request-and-local-http-server}
     const method = isAppleWebKit() ? 'base64' : 'blob-url';
-    const { waitUntilDone: waitUntilAudioDone } = prefetch(inputProps.audio.audioUrl, {
+    const { waitUntilDone: waitUntilAudioDone } = prefetch(inputProps?.audio?.audioUrl as string, {
       method,
     });
 
@@ -336,7 +336,7 @@ const MediaMaker: NextPage<MediaMaker> = ({
         cancelRender(e);
       });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [inputProps.audio.audioUrl]);
+  }, [inputProps?.audio?.audioUrl]);
 
   const renderPoster: RenderPoster = useCallback(() => {
     const video = getBackgroundVideoById(videoId);
