@@ -146,13 +146,13 @@ const Chapter: NextPage<ChapterProps> = ({
     return !isChapter
       ? versesResponse.verses[0].textImlaeiSimple
       : t('chapter:meta-description', {
-          transliteratedName: chapterResponse.chapter.transliteratedName,
-          translatedName: chapterResponse.chapter.translatedName as string,
-          revelationPlace: t(`surah-info:${chapterResponse.chapter.revelationPlace}`),
-          chapterOrder: toLocalizedNumber(Number(chapterResponse.chapter.id), lang),
-          localeName: getLocaleName(lang),
-          versesCount: toLocalizedNumber(chapterResponse.chapter.versesCount, lang),
-        });
+        transliteratedName: chapterResponse.chapter.transliteratedName,
+        translatedName: chapterResponse.chapter.translatedName as string,
+        revelationPlace: t(`surah-info:${chapterResponse.chapter.revelationPlace}`),
+        chapterOrder: toLocalizedNumber(Number(chapterResponse.chapter.id), lang),
+        localeName: getLocaleName(lang),
+        versesCount: toLocalizedNumber(chapterResponse.chapter.versesCount, lang),
+      });
   };
 
   return (
@@ -307,6 +307,8 @@ export const getStaticProps: GetStaticProps = async ({ params, locale }) => {
       revalidate: ONE_WEEK_REVALIDATION_PERIOD_SECONDS, // chapters will be generated at runtime if not found in the cache, then cached for subsequent requests for 7 days.
     };
   } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error('[getStaticProps] Error fetching chapter data:', error);
     return {
       props: { hasError: true },
       revalidate: REVALIDATION_PERIOD_ON_ERROR_SECONDS, // 35 seconds will be enough time before we re-try generating the page again.
