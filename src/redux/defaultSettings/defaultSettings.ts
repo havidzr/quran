@@ -8,6 +8,7 @@ import TafsirsSettings from '@/redux/types/TafsirsSettings';
 import Theme from '@/redux/types/Theme';
 import ThemeType from '@/redux/types/ThemeType';
 import TranslationsSettings from '@/redux/types/TranslationsSettings';
+import { INDONESIAN_KEMENAG_TAFSIR } from '@/utils/customTafsirs';
 import {
   ReadingPreference,
   WordByWordType,
@@ -30,7 +31,7 @@ export interface DefaultSettings {
 }
 
 // Tafsir Ibn Kathir in English
-export const DEFAULT_TAFSIRS = ['id-tafsir-ringkas-kemenag'];
+export const DEFAULT_TAFSIRS = [INDONESIAN_KEMENAG_TAFSIR.slug];
 
 export const DEFAULT_RECITER = {
   id: 7,

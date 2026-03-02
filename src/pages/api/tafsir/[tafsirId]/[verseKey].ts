@@ -17,42 +17,44 @@ export default function handler(req, res) {
 
   if (tafsirId === 'id-tafsir-tahlili' || tafsirId === 'id-tafsir-ringkas-kemenag') {
     try {
-      const kemenagPath = path.join(
-        process.cwd(),
-        'public',
-        'data',
-        'tafsir',
-        'kemenag',
-        `${chapter}.json`,
-      );
-      const tahliliPath = path.join(
-        process.cwd(),
-        'public',
-        'data',
-        'tafsir',
-        'tahlili',
-        `${chapter}.json`,
-      );
+      let text = '';
 
-      let kemenagText = '';
-      let tahliliText = '';
-
-      if (fs.existsSync(kemenagPath)) {
-        const kemenagData = JSON.parse(fs.readFileSync(kemenagPath, 'utf8'));
-        kemenagText = kemenagData[verse] || '';
+      if (tafsirId === 'id-tafsir-ringkas-kemenag') {
+        const kemenagPath = path.join(
+          process.cwd(),
+          'public',
+          'data',
+          'tafsir',
+          'kemenag',
+          `${chapter}.json`,
+        );
+        if (fs.existsSync(kemenagPath)) {
+          const kemenagData = JSON.parse(fs.readFileSync(kemenagPath, 'utf8'));
+          text = kemenagData[verse] || '';
+        }
+      } else if (tafsirId === 'id-tafsir-tahlili') {
+        const tahliliPath = path.join(
+          process.cwd(),
+          'public',
+          'data',
+          'tafsir',
+          'tahlili',
+          `${chapter}.json`,
+        );
+        if (fs.existsSync(tahliliPath)) {
+          const tahliliData = JSON.parse(fs.readFileSync(tahliliPath, 'utf8'));
+          text = tahliliData[verse] || '';
+        }
       }
 
-      if (fs.existsSync(tahliliPath)) {
-        const tahliliData = JSON.parse(fs.readFileSync(tahliliPath, 'utf8'));
-        tahliliText = tahliliData[verse] || '';
-      }
+      // Format text with paragraph breaks if needed
+      const formattedText = text.replace(/\n/g, '<br></br>');
 
       return res.status(200).json({
-        data: {
-          tafsir: {
-            tahlili: tahliliText,
-            wajiz: kemenagText,
-          },
+        tafsir: {
+          text: formattedText,
+          languageId: 67, // Indonesian language ID used by QDC
+          languageName: 'indonesian',
         },
       });
     } catch (error) {

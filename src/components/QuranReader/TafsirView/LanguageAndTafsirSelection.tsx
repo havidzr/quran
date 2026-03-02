@@ -6,6 +6,7 @@ import Button, { ButtonSize } from '@/dls/Button/Button';
 import Select, { SelectSize } from '@/dls/Forms/Select';
 import Skeleton from '@/dls/Skeleton/Skeleton';
 import SpinnerContainer from '@/dls/Spinner/SpinnerContainer';
+import { CUSTOM_TAFSIRS } from '@/utils/customTafsirs';
 import { getLocaleNameByFullName } from '@/utils/locale';
 import { TafsirsResponse } from 'types/ApiResponses';
 
@@ -42,30 +43,7 @@ const LanguageAndTafsirSelection = ({
       })),
   ];
 
-  const customTafsir = [
-    {
-      id: 820,
-      name: 'Tafsir Ringkas Kemenag',
-      authorName: 'Kementrian Agama Republik Indonesia',
-      slug: 'id-tafsir-ringkas-kemenag',
-      languageName: 'indonesian',
-      translatedName: {
-        name: 'Tafsir Ringkas Kemenag',
-        languageName: 'indonesian',
-      },
-    },
-    {
-      id: 821,
-      name: 'Tafsir Tahlili',
-      authorName: 'Kementrian Agama Republik Indonesia',
-      slug: 'id-tafsir-tahlili',
-      languageName: 'indonesian',
-      translatedName: {
-        name: 'Tafsir Tahlili',
-        languageName: 'indonesian',
-      },
-    },
-  ];
+  // Custom Tafsirs are imported from customTafsirs.ts
 
   return (
     <SpinnerContainer isLoading={isLoading}>
@@ -79,7 +57,7 @@ const LanguageAndTafsirSelection = ({
           onChange={onSelectLanguage}
           value={selectedLanguage}
         />
-        {[...data.tafsirs, ...customTafsir]
+        {[...data.tafsirs, ...CUSTOM_TAFSIRS]
           .filter(
             (tafsir) =>
               tafsir.languageName === selectedLanguage ||
