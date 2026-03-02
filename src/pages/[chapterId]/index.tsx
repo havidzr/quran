@@ -179,42 +179,42 @@ const Chapter: NextPage<ChapterProps> = ({
 const AYAH_KURSI_SLUGS = ['ayatul-kursi', 'آیت الکرسی'];
 
 export const getStaticProps: GetStaticProps = async ({ params, locale }) => {
-  let chapterIdOrVerseKeyOrSlug = String(params.chapterId);
-  let isValidChapter = isValidChapterId(chapterIdOrVerseKeyOrSlug);
-  const chaptersData = await getAllChaptersData(locale);
-  const isValidRanges = isRangesStringValid(chaptersData, chapterIdOrVerseKeyOrSlug);
-  // initialize the value as if it's chapter
-  let chapterId = chapterIdOrVerseKeyOrSlug;
-  if (
-    !isValidRanges &&
-    !isValidChapter &&
-    !isValidVerseKey(chaptersData, chapterIdOrVerseKeyOrSlug)
-  ) {
-    // if the value is a slug of Ayatul Kursi
-    if (AYAH_KURSI_SLUGS.includes(chapterIdOrVerseKeyOrSlug.toLowerCase())) {
-      chapterIdOrVerseKeyOrSlug = '2:255';
-    } else {
-      const sluggedChapterId = await getChapterIdBySlug(chapterIdOrVerseKeyOrSlug, locale);
-      // if it's not a valid slug
-      if (!sluggedChapterId) {
-        return { notFound: true };
-      }
-      chapterId = sluggedChapterId;
-      isValidChapter = true;
-    }
-  }
-  const defaultMushafId = getMushafId(
-    getQuranReaderStylesInitialState(locale).quranFont,
-    getQuranReaderStylesInitialState(locale).mushafLines,
-  ).mushaf;
-  // common API params between a chapter and the verse key.
-  let apiParams = {
-    ...getDefaultWordFields(getQuranReaderStylesInitialState(locale).quranFont),
-    mushaf: defaultMushafId,
-  };
-  let numberOfVerses = 1;
-  let pagesLookupResponse: PagesLookUpResponse | null = null;
   try {
+    let chapterIdOrVerseKeyOrSlug = String(params.chapterId);
+    let isValidChapter = isValidChapterId(chapterIdOrVerseKeyOrSlug);
+    const chaptersData = await getAllChaptersData(locale);
+    const isValidRanges = isRangesStringValid(chaptersData, chapterIdOrVerseKeyOrSlug);
+    // initialize the value as if it's chapter
+    let chapterId = chapterIdOrVerseKeyOrSlug;
+    if (
+      !isValidRanges &&
+      !isValidChapter &&
+      !isValidVerseKey(chaptersData, chapterIdOrVerseKeyOrSlug)
+    ) {
+      // if the value is a slug of Ayatul Kursi
+      if (AYAH_KURSI_SLUGS.includes(chapterIdOrVerseKeyOrSlug.toLowerCase())) {
+        chapterIdOrVerseKeyOrSlug = '2:255';
+      } else {
+        const sluggedChapterId = await getChapterIdBySlug(chapterIdOrVerseKeyOrSlug, locale);
+        // if it's not a valid slug
+        if (!sluggedChapterId) {
+          return { notFound: true };
+        }
+        chapterId = sluggedChapterId;
+        isValidChapter = true;
+      }
+    }
+    const defaultMushafId = getMushafId(
+      getQuranReaderStylesInitialState(locale).quranFont,
+      getQuranReaderStylesInitialState(locale).mushafLines,
+    ).mushaf;
+    // common API params between a chapter and the verse key.
+    let apiParams = {
+      ...getDefaultWordFields(getQuranReaderStylesInitialState(locale).quranFont),
+      mushaf: defaultMushafId,
+    };
+    let numberOfVerses = 1;
+    let pagesLookupResponse: PagesLookUpResponse | null = null;
     // if it's a range of verses e.g. 2:255-2:256
     if (isValidRanges) {
       const [{ verseKey: fromVerseKey }, { verseKey: toVerseKey }] =
@@ -298,7 +298,9 @@ export const getStaticProps: GetStaticProps = async ({ params, locale }) => {
     return {
       props: {
         chaptersData,
-        chapterResponse: { chapter: { ...getChapterData(chaptersData, chapterId), id: chapterId } },
+        chapterResponse: {
+          chapter: { ...getChapterData(chaptersData, chapterId), id: chapterId },
+        },
         versesResponse,
         quranReaderDataType: isValidChapter
           ? QuranReaderDataType.Chapter
