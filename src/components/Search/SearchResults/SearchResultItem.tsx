@@ -53,7 +53,7 @@ const SearchResultItem: React.FC<Props> = ({ result, source, service = SearchSer
           href={getChapterWithStartingVerseUrl(result.verseKey)}
           onClick={onResultItemClicked}
         >
-          {chapterData.transliteratedName} {localizedVerseKey}
+          {chapterData?.transliteratedName} {localizedVerseKey}
         </Link>
         <div className={styles.quranTextContainer}>
           <div className={styles.quranTextResult} translate="no">
