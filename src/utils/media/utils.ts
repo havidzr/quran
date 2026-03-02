@@ -97,8 +97,9 @@ export const getCurrentRangesAudioData = (
   fromVerseNumber: number,
   toVerseNumber: number,
 ): AudioData => {
-  if (!chapterAudioData || !chapterAudioData.verseTimings)
+  if (!chapterAudioData || !chapterAudioData.verseTimings) {
     return { verseTimings: [], duration: 0 } as AudioData;
+  }
   const fromVerseIndex = fromVerseNumber - 1;
   const toVerseIndex = toVerseNumber - 1;
   // Remove the audio data outside the range of from and to verse
