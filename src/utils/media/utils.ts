@@ -35,6 +35,7 @@ export const orientationToDimensions = (orientation: Orientation) => {
 };
 
 export const getNormalizedTimestamps = (audio: AudioData, framesPerSecond: number) => {
+  if (!audio || !audio.verseTimings) return [];
   return audio.verseTimings.map((currentVerse) => {
     return getNormalizedIntervals(
       currentVerse.timestampFrom,
@@ -96,6 +97,7 @@ export const getCurrentRangesAudioData = (
   fromVerseNumber: number,
   toVerseNumber: number,
 ): AudioData => {
+  if (!chapterAudioData || !chapterAudioData.verseTimings) return null;
   const fromVerseIndex = fromVerseNumber - 1;
   const toVerseIndex = toVerseNumber - 1;
   // Remove the audio data outside the range of from and to verse
