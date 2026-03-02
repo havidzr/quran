@@ -123,7 +123,7 @@ const PlayVerseAudioButton: React.FC<PlayVerseAudioProps> = ({
       className={classNames(styles.iconContainer, styles.verseAction, {
         [styles.fadedVerseAction]: isTranslationView,
       })}
-      ariaLabel={t('aria.play-surah', { surahName: chapterData.transliteratedName })}
+      ariaLabel={t('aria.play-surah', { surahName: chapterData?.transliteratedName })}
     >
       <span className={classNames(styles.icon, styles.playIcon)}>
         <PlayIcon />

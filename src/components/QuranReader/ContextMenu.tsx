@@ -59,7 +59,7 @@ const ContextMenu = () => {
   }, [page, lang]);
 
   // if it's SSR or the first time we render this
-  if (!verseKey) {
+  if (!verseKey || !chapterData) {
     return <></>;
   }
   const verse = getVerseNumberFromKey(verseKey);
