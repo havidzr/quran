@@ -56,13 +56,13 @@ export const makeVersesUrl = (
   id: string | number,
   currentLocale: string,
   params?: Record<string, unknown>,
-) => makeUrl(`/ verses / by_chapter / ${id} `, getVersesParams(currentLocale, params));
+) => makeUrl(`/verses/by_chapter/${id}`, getVersesParams(currentLocale, params));
 
 export const makeByRangeVersesUrl = (currentLocale: string, params?: Record<string, unknown>) =>
-  makeUrl(`/ verses / by_range`, getVersesParams(currentLocale, params));
+  makeUrl(`/verses/by_range`, getVersesParams(currentLocale, params));
 
 export const makeVersesFilterUrl = (params?: Record<string, unknown>) =>
-  makeUrl(`/ verses / filter`, { ...params });
+  makeUrl(`/verses/filter`, { ...params });
 
 /**
  * Compose the url for the translations API.
@@ -101,7 +101,7 @@ export const makeAvailableRecitersUrl = (locale: string, fields?: string[]): str
   makeUrl('/audio/reciters', { locale, fields });
 
 export const makeReciterUrl = (reciterId: string, locale: string): string =>
-  makeUrl(`/ audio / reciters / ${reciterId} `, {
+  makeUrl(`/audio/reciters/${reciterId}`, {
     locale,
     fields: ['profile_picture', 'cover_image', 'bio'],
   });
@@ -119,7 +119,7 @@ export const makeChapterAudioDataUrl = (
   reciterId: number,
   chapter: number,
   segments: boolean,
-): string => makeUrl(`/ audio / reciters / ${reciterId}/audio_files`, { chapter, segments });
+): string => makeUrl(`/audio/reciters/${reciterId}/audio_files`, { chapter, segments });
 
 export const makeAudioTimestampsUrl = (reciterId: number, verseKey: string) =>
   makeUrl(`/audio/reciters/${reciterId}/timestamp?verse_key=${verseKey}`);
