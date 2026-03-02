@@ -17,7 +17,7 @@ export const DEFAULT_VERSES_PARAMS = {
   words: true,
   translationFields: 'resource_name,language_id', // needed to show the name of the translation
   perPage: ITEMS_PER_PAGE,
-  fields: `${QuranFont.Uthmani}, chapter_id, hizb_number, text_imlaei_simple`, // we need text_uthmani field when copying the verse. text_imlaei_simple is for SEO description meta tag. Also the chapter_id for when we want to share the verse or navigate to Tafsir, hizb_number is for when we show the context menu.
+  fields: `${QuranFont.Uthmani},chapter_id,hizb_number,text_imlaei_simple`, // we need text_uthmani field when copying the verse. text_imlaei_simple is for SEO description meta tag. Also the chapter_id for when we want to share the verse or navigate to Tafsir, hizb_number is for when we show the context menu.
 };
 
 /**
@@ -35,7 +35,7 @@ const getVersesParams = (
 ): Record<string, unknown> => {
   const defaultParams = {
     ...DEFAULT_VERSES_PARAMS,
-    translations: getTranslationsInitialState(currentLocale).selectedTranslations.join(', '),
+    translations: getTranslationsInitialState(currentLocale).selectedTranslations.join(','),
     reciter: DEFAULT_RECITER.id,
     wordTranslationLanguage:
       getReadingPreferencesInitialState(currentLocale).selectedWordByWordLocale,
@@ -134,7 +134,7 @@ export const makeAudioTimestampsUrl = (reciterId: number, verseKey: string) =>
 export const makeTranslationsInfoUrl = (locale: string, translations: number[]): string =>
   makeUrl('/resources/translations/filter', {
     locale,
-    translations: translations.join(', '),
+    translations: translations.join(','),
   });
 
 /**

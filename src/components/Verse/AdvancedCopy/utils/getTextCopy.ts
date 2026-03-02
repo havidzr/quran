@@ -43,7 +43,7 @@ const getTextToCopy = ({
     footnote: shouldCopyFootnotes,
     translatorName: shouldIncludeTranslatorName,
     ...(toBeCopiedTranslations.length > 0 && {
-      translations: toBeCopiedTranslations.join(', '),
+      translations: toBeCopiedTranslations.join(','),
     }), // only include the translations when at least 1 translation has been selected.
     ...(shouldCopyFont && {
       ...getMushafId(shouldCopyFont, MushafLines.SixteenLines),
