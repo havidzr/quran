@@ -1,3 +1,5 @@
+/* eslint-disable i18next/no-literal-string */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useState } from 'react';
 
 import useTranslation from 'next-translate/useTranslation';
@@ -13,7 +15,7 @@ interface Props {
   onClick?: (startFlow: boolean) => void;
 }
 
-const TarteelVoiceSearchTrigger: React.FC<Props> = ({ isCommandBar = false, onClick }) => {
+const TarteelVoiceSearchTrigger: React.FC<Props> = ({ isCommandBar, onClick }) => {
   const { t } = useTranslation('common');
   const [isModalOpen, setIsModalOpen] = useState(false);
 
