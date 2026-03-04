@@ -13,7 +13,7 @@ import styles from './CommandBarBody.module.scss';
 import DataFetcher from '@/components/DataFetcher';
 // import TarteelAttribution from '@/components/TarteelAttribution/TarteelAttribution';
 import VoiceSearchBodyContainer from '@/components/TarteelVoiceSearch/BodyContainer';
-// import TarteelVoiceSearchTrigger from '@/components/TarteelVoiceSearch/Trigger';
+import TarteelVoiceSearchTrigger from '@/components/TarteelVoiceSearch/Trigger';
 import useDebounce from '@/hooks/useDebounce';
 import IconSearch from '@/icons/search.svg';
 import { selectRecentNavigations } from '@/redux/slices/CommandBar/state';
@@ -21,7 +21,7 @@ import { selectIsCommandBarVoiceFlowStarted } from '@/redux/slices/voiceSearch';
 import SearchQuerySource from '@/types/SearchQuerySource';
 import { makeSearchResultsUrl } from '@/utils/apiPaths';
 import { areArraysEqual } from '@/utils/array';
-import { logTextSearchQuery } from '@/utils/eventLogger';
+import { logTextSearchQuery, logButtonClick } from '@/utils/eventLogger';
 import { SearchResponse } from 'types/ApiResponses';
 import { SearchNavigationType } from 'types/SearchNavigationResult';
 
@@ -183,7 +183,7 @@ const CommandBarBody: React.FC = () => {
             />
           </div>
         )}
-        {/* <TarteelVoiceSearchTrigger
+        <TarteelVoiceSearchTrigger
           isCommandBar
           onClick={(startFlow: boolean) => {
             logButtonClick(
@@ -191,7 +191,7 @@ const CommandBarBody: React.FC = () => {
               `command_bar_voice_search_${startFlow ? 'start' : 'stop'}_flow`,
             );
           }}
-        /> */}
+        />
       </div>
       <div className={styles.bodyContainer}>
         {isVoiceSearchFlowStarted ? (

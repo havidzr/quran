@@ -5,7 +5,7 @@ import { useDispatch } from 'react-redux';
 
 import styles from './CommandBarTrigger.module.scss';
 
-// import TarteelVoiceSearchTrigger from '@/components/TarteelVoiceSearch/Trigger';
+import TarteelVoiceSearchTrigger from '@/components/TarteelVoiceSearch/Trigger';
 import KeyboardInput from '@/dls/KeyboardInput';
 import IconSearch from '@/icons/search.svg';
 import { toggleIsOpen } from '@/redux/slices/CommandBar/state';
@@ -35,14 +35,14 @@ const CommandBarTrigger: React.FC = () => {
       </div>
       <div className={styles.actionsContainer}>
         <KeyboardInput meta keyboardKey="K" />
-        {/* <div className={styles.searchButtonWrapper} id="voice-search-trigger">
+        <div className={styles.searchButtonWrapper} id="voice-search-trigger">
           <TarteelVoiceSearchTrigger
             isCommandBar
             onClick={() => {
               logButtonClick('command_bar_homepage_voice_search_trigger');
             }}
           />
-        </div> */}
+        </div>
       </div>
     </div>
   );
