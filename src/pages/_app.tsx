@@ -18,6 +18,7 @@ import OnboardingChecklist from '@/components/Onboarding/OnboardingChecklist';
 import { OnboardingProvider } from '@/components/Onboarding/OnboardingProvider';
 import SessionIncrementor from '@/components/SessionIncrementor';
 import ThirdPartyScripts from '@/components/ThirdPartyScripts/ThirdPartyScripts';
+import AIAssistantWidget from '@/components/AIAssistant/AIAssistantWidget';
 import Footer from '@/dls/Footer/Footer';
 import ToastContainerProvider from '@/dls/Toast/ToastProvider';
 import ReduxProvider from '@/redux/Provider';
@@ -102,6 +103,7 @@ function MyApp({ Component, pageProps }): JSX.Element {
 
                       <DeveloperUtility />
                       <Component {...pageProps} />
+                      <AIAssistantWidget />
                       <AudioPlayer />
                       <Footer />
                       <OnboardingChecklist />
