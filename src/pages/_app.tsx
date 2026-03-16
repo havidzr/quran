@@ -8,6 +8,7 @@ import { DefaultSeo } from 'next-seo';
 import useTranslation from 'next-translate/useTranslation';
 import useSWRImmutable from 'swr/immutable';
 
+import AiAssistantWidget from '@/components/AiAssistant/AiAssistantWidget';
 import AudioPlayer from '@/components/AudioPlayer/AudioPlayer';
 import UserAccountModal from '@/components/Auth/UserAccountModal';
 import DeveloperUtility from '@/components/DeveloperUtility/DeveloperUtility';
@@ -18,7 +19,6 @@ import OnboardingChecklist from '@/components/Onboarding/OnboardingChecklist';
 import { OnboardingProvider } from '@/components/Onboarding/OnboardingProvider';
 import SessionIncrementor from '@/components/SessionIncrementor';
 import ThirdPartyScripts from '@/components/ThirdPartyScripts/ThirdPartyScripts';
-import AIAssistantWidget from '@/components/AIAssistant/AIAssistantWidget';
 import Footer from '@/dls/Footer/Footer';
 import ToastContainerProvider from '@/dls/Toast/ToastProvider';
 import ReduxProvider from '@/redux/Provider';
@@ -103,7 +103,7 @@ function MyApp({ Component, pageProps }): JSX.Element {
 
                       <DeveloperUtility />
                       <Component {...pageProps} />
-                      <AIAssistantWidget />
+                      <AiAssistantWidget />
                       <AudioPlayer />
                       <Footer />
                       <OnboardingChecklist />

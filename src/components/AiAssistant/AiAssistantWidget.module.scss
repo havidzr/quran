@@ -1,7 +1,7 @@
 .container {
   position: fixed;
-  bottom: 100px; /* Elevated to avoid overlapping with footer/audio player */
-  left: 20px;    /* Left position as requested */
+  bottom: 100px;
+  inset-inline-start: 20px;
   z-index: 9999;
 }
 
@@ -94,7 +94,7 @@
 
 .userMessage {
   justify-content: flex-end;
-  
+
   .bubble {
     background-color: var(--color-primary);
     color: var(--color-background-default);
@@ -104,7 +104,7 @@
 
 .aiMessage {
   justify-content: flex-start;
-  
+
   .bubble {
     background-color: var(--color-background-default);
     color: var(--color-text-primary);
@@ -152,7 +152,7 @@
   border: none;
   font-weight: 600;
   cursor: pointer;
-  
+
   &:disabled {
     opacity: 0.5;
     cursor: not-allowed;

@@ -1,15 +1,16 @@
 import React, { useState } from 'react';
-import AIAssistantChat from './AIAssistantChat';
-import styles from './AIAssistantWidget.module.scss';
 
-const AIAssistantWidget = () => {
+import AiAssistantChat from './AiAssistantChat';
+import styles from './AiAssistantWidget.module.scss';
+
+const AiAssistantWidget = () => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
     <div className={styles.container}>
       {isOpen && (
         <div className={styles.chatWindow}>
-          <AIAssistantChat onClose={() => setIsOpen(false)} />
+          <AiAssistantChat onClose={() => setIsOpen(false)} />
         </div>
       )}
       {!isOpen && (
@@ -19,7 +20,6 @@ const AIAssistantWidget = () => {
           className={styles.fabButton}
           aria-label="Tanya AI"
         >
-          {/* Simple Sparkle / Bot Icon */}
           <svg
             width="28"
             height="28"
@@ -38,4 +38,4 @@ const AIAssistantWidget = () => {
   );
 };
 
-export default AIAssistantWidget;
+export default AiAssistantWidget;
