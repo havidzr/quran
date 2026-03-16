@@ -59,6 +59,10 @@ export default async function handler(req: Request) {
       match_count: 5,
     });
 
+    if (error) {
+       console.error("Supabase Error:", error);
+    }
+
     let contextStr = "Tidak ada ayat atau tafsir spesifik yang langsung cocok, silakan jawab menggunakan kebijaksanaan umum.";
     if (matchedChunks && matchedChunks.length > 0) {
         contextStr = matchedChunks.map((chunk: any) => chunk.content).join("\n\n---\n");
@@ -109,6 +113,6 @@ export default async function handler(req: Request) {
 
   } catch (error: any) {
     console.error("Chat API Error:", error);
-    return new Response(error.message || 'Error occurred', { status: 500 });
+    return new Response((error as Error).message || 'Error occurred', { status: 500 });
   }
 }
