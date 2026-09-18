@@ -146,7 +146,30 @@
 .headerLeft {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
+  overflow: hidden;
+  flex: 1;
+}
+
+.backButton {
+  background: rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 5px 9px;
+  border-radius: 8px;
+  transition: all 0.2s;
+  flex-shrink: 0;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateX(-2px);
+  }
 }
 
 .botAvatar {
@@ -165,13 +188,17 @@
 .headerText {
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
 .title {
   font-weight: 700;
-  font-size: 1.05rem;
+  font-size: 1.02rem;
   line-height: 1.2;
   color: #ffffff;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
 }
 
 .subtitleWrapper {
@@ -198,6 +225,7 @@
   display: flex;
   align-items: center;
   gap: 4px;
+  flex-shrink: 0;
 }
 
 .actionButton {
@@ -220,6 +248,216 @@
   }
 }
 
+// ==============================
+// SESSION HUB (TAMPILAN RIWAYAT)
+// ==============================
+.sessionsHub {
+  flex: 1;
+  padding: 16px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  background-color: var(--color-background-alternative-faint);
+}
+
+.newChatBanner {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  background: linear-gradient(135deg, #02989a 0%, #017678 100%);
+  color: #ffffff;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 14px rgba(2, 152, 154, 0.35);
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(2, 152, 154, 0.5);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+.newChatBannerLeft {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-align: left;
+}
+
+.newChatIcon {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  flex-shrink: 0;
+}
+
+.newChatText {
+  display: flex;
+  flex-direction: column;
+}
+
+.newChatTitle {
+  font-size: 0.96rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.newChatSubtitle {
+  font-size: 0.76rem;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.sessionsSectionHeader {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-faded);
+  margin-top: 4px;
+}
+
+.sessionList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sessionCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  background-color: var(--color-background-elevated);
+  border: 1px solid var(--color-borders-hairline);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: #02989a;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(2, 152, 154, 0.12);
+  }
+}
+
+.sessionCardLeft {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  overflow: hidden;
+  flex: 1;
+}
+
+.sessionCardIcon {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: rgba(2, 152, 154, 0.1);
+  color: #02989a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.sessionCardInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow: hidden;
+}
+
+.sessionCardTitle {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-text-default);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.sessionCardSnippet {
+  font-size: 0.77rem;
+  color: var(--color-text-faded);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.sessionCardDate {
+  font-size: 0.69rem;
+  color: var(--color-text-faded);
+  opacity: 0.8;
+}
+
+.sessionDeleteBtn {
+  background: transparent;
+  border: none;
+  color: var(--color-text-faded);
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+  margin-left: 6px;
+
+  &:hover {
+    color: #ef4444;
+    background: rgba(239, 68, 68, 0.12);
+  }
+}
+
+.emptySessionsCard {
+  background: var(--color-background-elevated);
+  border: 1px solid var(--color-borders-hairline);
+  border-radius: 14px;
+  padding: 24px 16px;
+  text-align: center;
+  color: var(--color-text-faded);
+  font-size: 0.88rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.emptyStartBtn {
+  padding: 8px 16px;
+  border-radius: 20px;
+  background: #02989a;
+  color: #ffffff;
+  border: none;
+  font-weight: 600;
+  font-size: 0.84rem;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    background: #017678;
+    transform: scale(1.03);
+  }
+}
+
+// ==============================
+// MESSAGE LIST & CHAT
+// ==============================
 .messageList {
   flex: 1;
   padding: 16px;
