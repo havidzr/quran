@@ -60,7 +60,12 @@ const AiAssistantChat: React.FC<Props> = ({ onClose }) => {
         });
 
         if (!res.ok) {
-          throw new Error('Gagal menghubungi AI');
+          let errMsg = 'Gagal menghubungi AI';
+          try {
+            const errJson = await res.json();
+            if (errJson.message) errMsg = errJson.message;
+          } catch (_) {}
+          throw new Error(errMsg);
         }
 
         const reader = res.body?.getReader();
@@ -89,11 +94,11 @@ const AiAssistantChat: React.FC<Props> = ({ onClose }) => {
             }
           }
         }
-      } catch {
+      } catch (err: any) {
         const errMessage: Message = {
           id: `err-${Date.now()}`,
           role: 'assistant',
-          content: 'Maaf, terjadi kendala saat menghubungkan ke asisten AI. Silakan coba kembali sesaat lagi.',
+          content: err?.message || 'Maaf, terjadi kendala saat menghubungkan ke asisten AI. Silakan coba kembali sesaat lagi.',
         };
         setMessages((prev) => [...prev, errMessage]);
       } finally {
