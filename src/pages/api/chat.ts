@@ -5,44 +5,54 @@ import fs from 'fs';
 import path from 'path';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
 const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY || '';
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
 
-const BASE_SYSTEM_PROMPT = `Kamu adalah "Quran Tsirwah AI", asisten cerdas Islami resmi dari Tsirwah Pesantren Digital.
-Tugas utama kamu adalah membimbing, menjawab pertanyaan, dan memberikan solusi kehidupan berbasis Al-Quran dan As-Sunnah dengan rujukan utama Tafsir Kementerian Agama RI (Kemenag RI) serta kitab-kitab tafsir mu'tabar Ahlussunnah wal Jama'ah (seperti Tafsir Jalalain dan Tafsir Ibnu Katsir).
+const BASE_SYSTEM_PROMPT = `Kamu adalah "Quran Tsirwah AI", asisten cerdas tafsir Al-Qur'an dan khazanah Islam resmi dari Tsirwah Pesantren Digital.
+Tugas utama kamu adalah membimbing, menjawab pertanyaan, dan menguraikan kisah/hukum/hikmah Al-Qur'an secara MENDALAM, AKURAT, dan BERBOBOT setara kajian ulama pesantren Ahlussunnah wal Jama'ah (Nahdlatul Ulama).
 
-Pedoman Utama Format Jawaban (WAJIB DIIKUTI):
-1. Karakter & Adab:
-   - Bersikap santun, empati, ramah, dan menyejukkan hati (layaknya ustadz/penasihat bijak dari Nahdlatul Ulama / Pesantren Tsirwah).
-   - Awali dengan sapaan hangat yang menenangkan jika sesuai konteks.
+Rujukan Utama Kamu:
+- Tafsir Kementerian Agama RI (Tafsir Ringkas & Tafsir Tahlili)
+- Kitab Tafsir Mu'tabar: Tafsir Ibnu Katsir, Tafsir Jalalain, Tafsir At-Thabari, dan Tafsir Al-Qurthubi.
+
+PEDOMAN KUALITAS KONTEN & FORMAT (WAJIB DIIKUTI SECARA KETAT):
+
+1. Bobot Penjelasan (Jangan Dangkal / Jangan Basa-Basi Umum):
+   - Jika ditanya kisah/sejarah: Uraikan konteks asbabun nuzul, latar geografis/sosial, intrik dakwah para nabi, bentuk penyimpangan kaum terdahulu, dan detail bentuk azab/pertolongan Allah.
+   - Jika ditanya hukum/akhlak: Jelaskan makna lafaz (analisis bahasa/balaghah), pendapat mufassirin muktabar, dan korelasinya dengan kehidupan nyata modern.
+   - Hindari jawaban yang terlalu singkat atau terasa normatif. Berikan wawasan yang menambah ilmu dan menggetarkan hati (tadabbur).
 
 2. Teks Asli Ayat Al-Qur'an (WAJIB):
-   - Setiap kali mengutip ayat, WAJIB menyertakan teks atau potongan ayat asli dalam BAHASA ARAB BERHARAKAT (Rasm Uthmani) yang benar dan indah.
+   - Setiap kali mengutip ayat, WAJIB menuliskan teks ayat asli dalam BAHASA ARAB BERHARAKAT LENGKAP (Rasm Uthmani) yang indah dan benar.
 
-3. Tautan Link ke Halaman Mushaf Tsirwah (WAJIB):
-   - Setiap kali menyebutkan ayat, sertakan tautan langsung ke halaman ayat tersebut dengan format markdown internal:
-     [Buka QS. NamaSurat: NomorAyat](/<nomorSurat>/<nomorAyat>)
-     Contoh: [Buka QS. At-Taubah: 40](/9/40) atau [Buka QS. Al-Baqarah: 286](/2/286).
+3. Tautan Link ke Mushaf Tsirwah (WAJIB):
+   - Tepat di bawah terjemahan, cantumkan tautan ke mushaf dengan format:
+     👉 [Buka QS. NamaSurat: NomorAyat](/<nomorSurat>/<nomorAyat>)
+     Contoh: 👉 [Buka QS. Hud: 85](/11/85) atau 👉 [Buka QS. Asy-Syu'ara: 189](/26/189).
 
-4. Struktur Setiap Poin Ayat:
-   Gunakan struktur rapi berikut untuk setiap ayat yang dibahas:
-   **[Nomor]. [Judul Pesan Utama]**
-   [Teks Arab Berharakat]
+4. Struktur Baku Setiap Poin Pembahasan:
+   Awali jawaban dengan salam dan pengantar hikmah yang hangat, lalu sajikan 2–3 poin utama dengan struktur rapi:
+
+   **[Nomor]. [Judul Pembahasan yang Kuat]**
+
+   [Teks Ayat Al-Qur'an Arab Berharakat Lengkap]
+
    > "[Terjemahan resmi ayat dalam bahasa Indonesia]"
    👉 [Buka QS. NamaSurat: NomorAyat](/<nomorSurat>/<nomorAyat>)
-   [Uraian hikmah/tafsir singkat yang menyejukkan hati]
 
-5. Panjang Jawaban yang Proporsional:
-   - Pilih 2 sampai 3 ayat paling relevan dan mendalam agar penjelasan padat, berbobot, dan nyaman dibaca di layar smartphone.
+   [Uraian Tafsir & Tadabbur Mendalam: Jelaskan konteks ayat, apa kata Ibnu Katsir/Kemenag, detail kisah, dan pelajaran pentingnya]
 
-6. Rekomendasi Pertanyaan Lanjutan (Di akhir jawaban):
-   - Di baris paling akhir setelah kesimpulan, berikan tepat 2 saran pertanyaan lanjutan dengan format persis:
+5. Kesimpulan (Ibrah):
+   - Berikan rangkuman inti pesan moral dan spiritual yang aplikatif bagi pembaca.
+
+6. Rekomendasi Lanjutan (Wajib di Baris Paling Akhir):
+   - Tuliskan tepat 2 pertanyaan lanjutan yang menarik dan memancing tadabbur lebih dalam:
      Rekomendasi Lanjutan:
-     - [Pertanyaan lanjutan 1]
-     - [Pertanyaan lanjutan 2]
+     - [Pertanyaan mendalam 1]
+     - [Pertanyaan mendalam 2]
 
-7. Integritas:
-   - Jangan pernah mengarang ayat atau terjemahan. Jika tidak ada dalil spesifik, jelaskan dengan nasihat bijak umum.
+7. Adab & Karakter:
+   - Nada bicara: Menyejukkan hati, santun, ilmiah, berwibawa, dan menentramkan.
 `;
 
 function getLocalTafsirContext(queryText: string): string {
@@ -83,13 +93,22 @@ function getLocalTafsirContext(queryText: string): string {
     }
 
     if (matchedSurahId) {
+      // Prioritaskan Tafsir Tahlili jika ada untuk konten mendalam, fallback ke Kemenag Ringkas
+      const tahliliPath = path.join(process.cwd(), 'public', 'data', 'tafsir', 'tahlili', `${matchedSurahId}.json`);
       const kemenagPath = path.join(process.cwd(), 'public', 'data', 'tafsir', 'kemenag', `${matchedSurahId}.json`);
-      if (fs.existsSync(kemenagPath)) {
-        const kemenagData = JSON.parse(fs.readFileSync(kemenagPath, 'utf8'));
-        if (matchedAyah && kemenagData[matchedAyah]) {
-          return `[Tafsir Kemenag RI Surah ${matchedSurahId} Ayat ${matchedAyah}]:\n${kemenagData[matchedAyah]}`;
+
+      let tafsirData: any = null;
+      if (fs.existsSync(tahliliPath)) {
+        tafsirData = JSON.parse(fs.readFileSync(tahliliPath, 'utf8'));
+      } else if (fs.existsSync(kemenagPath)) {
+        tafsirData = JSON.parse(fs.readFileSync(kemenagPath, 'utf8'));
+      }
+
+      if (tafsirData) {
+        if (matchedAyah && tafsirData[matchedAyah]) {
+          return `[Tafsir Kemenag RI Surah ${matchedSurahId} Ayat ${matchedAyah}]:\n${tafsirData[matchedAyah]}`;
         }
-        const sample = Object.entries(kemenagData).slice(0, 3).map(([a, txt]) => `Ayat ${a}: ${txt}`).join('\n');
+        const sample = Object.entries(tafsirData).slice(0, 3).map(([a, txt]) => `Ayat ${a}: ${txt}`).join('\n');
         return `[Tafsir Kemenag RI Surah ${matchedSurahId}]:\n${sample}`;
       }
     }
@@ -99,60 +118,7 @@ function getLocalTafsirContext(queryText: string): string {
   return '';
 }
 
-// Handler streaming Gemini dengan model generasi terbaru (2.5-flash / 2.0-flash)
-async function streamGemini(
-  systemPrompt: string,
-  messages: Array<{ role: string; content: string }>,
-  res: any,
-) {
-  const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
-
-  const chatHistory = messages.slice(0, -1).map((m) => ({
-    role: m.role === 'user' ? 'user' : 'model',
-    parts: [{ text: m.content }],
-  }));
-
-  const lastMessage = messages[messages.length - 1]?.content || '';
-
-  // Rantai prioritas model: gemini-2.5-flash -> gemini-2.0-flash -> gemini-1.5-pro
-  const candidateModels = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-pro', 'gemini-1.5-flash'];
-  let stream: any = null;
-  let lastError: any = null;
-
-  for (const modelName of candidateModels) {
-    try {
-      const model = genAI.getGenerativeModel({
-        model: modelName,
-        systemInstruction: systemPrompt,
-      });
-
-      const chat = model.startChat({ history: chatHistory });
-      stream = await chat.sendMessageStream(lastMessage);
-      break;
-    } catch (err) {
-      lastError = err;
-      console.warn(`Model ${modelName} tidak tersedia, mencoba model berikutnya...`);
-    }
-  }
-
-  if (!stream) {
-    throw lastError || new Error('Gagal menginisialisasi model Gemini');
-  }
-
-  res.setHeader('Content-Type', 'text/plain; charset=utf-8');
-  res.setHeader('Transfer-Encoding', 'chunked');
-
-  for await (const chunk of stream.stream) {
-    const chunkText = chunk.text();
-    if (chunkText) {
-      res.write(chunkText);
-    }
-  }
-
-  res.end();
-}
-
-// Handler streaming DeepSeek (sebagai alternatif/fallback)
+// Handler streaming DeepSeek (Mesin Utama - Cepat, Tuntas, Tanpa Sensor Palsu)
 async function streamDeepSeek(
   systemPrompt: string,
   messages: Array<{ role: string; content: string }>,
@@ -176,7 +142,7 @@ async function streamDeepSeek(
       model: 'deepseek-chat',
       messages: apiMessages,
       stream: true,
-      temperature: 0.4,
+      temperature: 0.3, // Lebih presisi, akademis, dan terarah
     }),
   });
 
@@ -225,6 +191,40 @@ async function streamDeepSeek(
   res.end();
 }
 
+// Handler streaming Gemini (Cadangan)
+async function streamGemini(
+  systemPrompt: string,
+  messages: Array<{ role: string; content: string }>,
+  res: any,
+) {
+  const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
+  const model = genAI.getGenerativeModel({
+    model: 'gemini-1.5-flash',
+    systemInstruction: systemPrompt,
+  });
+
+  const chatHistory = messages.slice(0, -1).map((m) => ({
+    role: m.role === 'user' ? 'user' : 'model',
+    parts: [{ text: m.content }],
+  }));
+
+  const lastMessage = messages[messages.length - 1]?.content || '';
+  const chat = model.startChat({ history: chatHistory });
+  const geminiStream = await chat.sendMessageStream(lastMessage);
+
+  res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+  res.setHeader('Transfer-Encoding', 'chunked');
+
+  for await (const chunk of geminiStream.stream) {
+    const chunkText = chunk.text();
+    if (chunkText) {
+      res.write(chunkText);
+    }
+  }
+
+  res.end();
+}
+
 export default async function handler(req: any, res: any) {
   if (req.method !== 'POST') {
     res.status(405).json({ message: 'Method not allowed' });
@@ -243,24 +243,23 @@ export default async function handler(req: any, res: any) {
 
     let systemPrompt = BASE_SYSTEM_PROMPT;
     if (localTafsir) {
-      systemPrompt += `\n\n[Konteks Data Tafsir Kemenag Terkait]:\n${localTafsir}\nSilakan jadikan naskah resmi di atas sebagai rujukan utama.\n`;
+      systemPrompt += `\n\n[Konteks Naskah Tafsir Kemenag Terkait]:\n${localTafsir}\nSilakan jadikan naskah resmi di atas sebagai rujukan mendalam.\n`;
     }
 
-    // Prioritas 1: Google Gemini (Gemini 2.5) jika GEMINI_API_KEY tersedia
-    if (GEMINI_API_KEY) {
-      await streamGemini(systemPrompt, messages, res);
-      return;
-    }
-
-    // Prioritas 2: DeepSeek jika DEEPSEEK_API_KEY tersedia
+    // Prioritas Utama: DeepSeek (Cepat, Tuntas, Rapi, Format Disiplin)
     if (DEEPSEEK_API_KEY) {
       await streamDeepSeek(systemPrompt, messages, res);
       return;
     }
 
-    // Jika belum ada API key
+    // Cadangan: Google Gemini
+    if (GEMINI_API_KEY) {
+      await streamGemini(systemPrompt, messages, res);
+      return;
+    }
+
     res.status(500).json({
-      message: 'GEMINI_API_KEY atau DEEPSEEK_API_KEY belum dikonfigurasi di Environment Variable Vercel.',
+      message: 'DEEPSEEK_API_KEY atau GEMINI_API_KEY belum dikonfigurasi di Environment Variable Vercel.',
     });
   } catch (error: any) {
     console.error('Chat API Error:', error);
