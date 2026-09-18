@@ -2,7 +2,7 @@
 
 .checklistPosition {
   position: fixed;
-  inset-block-end: var(--spacing-medium);
+  inset-block-end: calc(var(--spacing-medium) + 68px);
   inset-inline-end: var(--spacing-medium);
   box-sizing: border-box;
   z-index: var(--z-index-overlay);
