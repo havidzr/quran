@@ -33,7 +33,7 @@ Pedoman Utama Format Jawaban (WAJIB DIIKUTI):
    [Uraian hikmah/tafsir singkat yang menyejukkan hati]
 
 5. Panjang Jawaban yang Proporsional:
-   - Pilih 2 sampai 3 ayat paling relevan dan kuat agar penjelasan padat, mengena, dan nyaman dibaca di layar smartphone.
+   - Pilih 2 sampai 3 ayat paling relevan dan mendalam agar penjelasan padat, berbobot, dan nyaman dibaca di layar smartphone.
 
 6. Rekomendasi Pertanyaan Lanjutan (Di akhir jawaban):
    - Di baris paling akhir setelah kesimpulan, berikan tepat 2 saran pertanyaan lanjutan dengan format persis:
@@ -99,17 +99,13 @@ function getLocalTafsirContext(queryText: string): string {
   return '';
 }
 
-// Handler streaming Gemini (Google Generative AI) - Model: gemini-1.5-flash
+// Handler streaming Gemini dengan model generasi terbaru (2.5-flash / 2.0-flash)
 async function streamGemini(
   systemPrompt: string,
   messages: Array<{ role: string; content: string }>,
   res: any,
 ) {
   const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
-  const model = genAI.getGenerativeModel({
-    model: 'gemini-1.5-flash',
-    systemInstruction: systemPrompt,
-  });
 
   const chatHistory = messages.slice(0, -1).map((m) => ({
     role: m.role === 'user' ? 'user' : 'model',
@@ -117,13 +113,36 @@ async function streamGemini(
   }));
 
   const lastMessage = messages[messages.length - 1]?.content || '';
-  const chat = model.startChat({ history: chatHistory });
-  const geminiStream = await chat.sendMessageStream(lastMessage);
+
+  // Rantai prioritas model: gemini-2.5-flash -> gemini-2.0-flash -> gemini-1.5-pro
+  const candidateModels = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-pro', 'gemini-1.5-flash'];
+  let stream: any = null;
+  let lastError: any = null;
+
+  for (const modelName of candidateModels) {
+    try {
+      const model = genAI.getGenerativeModel({
+        model: modelName,
+        systemInstruction: systemPrompt,
+      });
+
+      const chat = model.startChat({ history: chatHistory });
+      stream = await chat.sendMessageStream(lastMessage);
+      break;
+    } catch (err) {
+      lastError = err;
+      console.warn(`Model ${modelName} tidak tersedia, mencoba model berikutnya...`);
+    }
+  }
+
+  if (!stream) {
+    throw lastError || new Error('Gagal menginisialisasi model Gemini');
+  }
 
   res.setHeader('Content-Type', 'text/plain; charset=utf-8');
   res.setHeader('Transfer-Encoding', 'chunked');
 
-  for await (const chunk of geminiStream.stream) {
+  for await (const chunk of stream.stream) {
     const chunkText = chunk.text();
     if (chunkText) {
       res.write(chunkText);
@@ -227,7 +246,7 @@ export default async function handler(req: any, res: any) {
       systemPrompt += `\n\n[Konteks Data Tafsir Kemenag Terkait]:\n${localTafsir}\nSilakan jadikan naskah resmi di atas sebagai rujukan utama.\n`;
     }
 
-    // Prioritas 1: Google Gemini jika GEMINI_API_KEY tersedia
+    // Prioritas 1: Google Gemini (Gemini 2.5) jika GEMINI_API_KEY tersedia
     if (GEMINI_API_KEY) {
       await streamGemini(systemPrompt, messages, res);
       return;
