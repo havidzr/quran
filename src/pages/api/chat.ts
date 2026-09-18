@@ -3,7 +3,9 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import fs from 'fs';
 import path from 'path';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
 const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY || '';
 
 const BASE_SYSTEM_PROMPT = `Kamu adalah "Quran Tsirwah AI", asisten cerdas Islami resmi dari Tsirwah Pesantren Digital.
@@ -15,7 +17,7 @@ Pedoman Utama Format Jawaban (WAJIB DIIKUTI):
    - Awali dengan sapaan hangat yang menenangkan jika sesuai konteks.
 
 2. Teks Asli Ayat Al-Qur'an (WAJIB):
-   - Setiap kali mengutip ayat, WAJIB menyertakan potongan atau teks ayat asli dalam BAHASA ARAB BERHARAKAT (Rasm Uthmani) yang benar dan indah, BUKAN hanya terjemahan latinnya.
+   - Setiap kali mengutip ayat, WAJIB menyertakan teks atau potongan ayat asli dalam BAHASA ARAB BERHARAKAT (Rasm Uthmani) yang benar dan indah.
 
 3. Tautan Link ke Halaman Mushaf Tsirwah (WAJIB):
    - Setiap kali menyebutkan ayat, sertakan tautan langsung ke halaman ayat tersebut dengan format markdown internal:
@@ -87,7 +89,6 @@ function getLocalTafsirContext(queryText: string): string {
         if (matchedAyah && kemenagData[matchedAyah]) {
           return `[Tafsir Kemenag RI Surah ${matchedSurahId} Ayat ${matchedAyah}]:\n${kemenagData[matchedAyah]}`;
         }
-        // Jika tidak spesifik ayat, sertakan sampel 3 ayat pertama
         const sample = Object.entries(kemenagData).slice(0, 3).map(([a, txt]) => `Ayat ${a}: ${txt}`).join('\n');
         return `[Tafsir Kemenag RI Surah ${matchedSurahId}]:\n${sample}`;
       }
@@ -98,6 +99,41 @@ function getLocalTafsirContext(queryText: string): string {
   return '';
 }
 
+// Handler streaming Gemini (Google Generative AI) - Model: gemini-1.5-flash
+async function streamGemini(
+  systemPrompt: string,
+  messages: Array<{ role: string; content: string }>,
+  res: any,
+) {
+  const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
+  const model = genAI.getGenerativeModel({
+    model: 'gemini-1.5-flash',
+    systemInstruction: systemPrompt,
+  });
+
+  const chatHistory = messages.slice(0, -1).map((m) => ({
+    role: m.role === 'user' ? 'user' : 'model',
+    parts: [{ text: m.content }],
+  }));
+
+  const lastMessage = messages[messages.length - 1]?.content || '';
+  const chat = model.startChat({ history: chatHistory });
+  const geminiStream = await chat.sendMessageStream(lastMessage);
+
+  res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+  res.setHeader('Transfer-Encoding', 'chunked');
+
+  for await (const chunk of geminiStream.stream) {
+    const chunkText = chunk.text();
+    if (chunkText) {
+      res.write(chunkText);
+    }
+  }
+
+  res.end();
+}
+
+// Handler streaming DeepSeek (sebagai alternatif/fallback)
 async function streamDeepSeek(
   systemPrompt: string,
   messages: Array<{ role: string; content: string }>,
@@ -183,26 +219,34 @@ export default async function handler(req: any, res: any) {
       return;
     }
 
-    if (!DEEPSEEK_API_KEY) {
-      res.status(500).json({
-        message: 'DEEPSEEK_API_KEY belum dikonfigurasi di Environment Variable Vercel.',
-      });
-      return;
-    }
-
     const lastMessage = messages[messages.length - 1];
     const localTafsir = getLocalTafsirContext(lastMessage.content);
 
     let systemPrompt = BASE_SYSTEM_PROMPT;
     if (localTafsir) {
-      systemPrompt += `\n\n[Konteks Data Tafsir Kemenag Terkait]:\n${localTafsir}\nSilakan prioritaskan penjelasan dari naskah resmi di atas.\n`;
+      systemPrompt += `\n\n[Konteks Data Tafsir Kemenag Terkait]:\n${localTafsir}\nSilakan jadikan naskah resmi di atas sebagai rujukan utama.\n`;
     }
 
-    await streamDeepSeek(systemPrompt, messages, res);
+    // Prioritas 1: Google Gemini jika GEMINI_API_KEY tersedia
+    if (GEMINI_API_KEY) {
+      await streamGemini(systemPrompt, messages, res);
+      return;
+    }
+
+    // Prioritas 2: DeepSeek jika DEEPSEEK_API_KEY tersedia
+    if (DEEPSEEK_API_KEY) {
+      await streamDeepSeek(systemPrompt, messages, res);
+      return;
+    }
+
+    // Jika belum ada API key
+    res.status(500).json({
+      message: 'GEMINI_API_KEY atau DEEPSEEK_API_KEY belum dikonfigurasi di Environment Variable Vercel.',
+    });
   } catch (error: any) {
     console.error('Chat API Error:', error);
     if (!res.headersSent) {
-      res.status(500).json({ message: error?.message || 'Terjadi kesalahan pada server DeepSeek AI' });
+      res.status(500).json({ message: error?.message || 'Terjadi kesalahan pada server AI' });
     } else {
       res.end();
     }
