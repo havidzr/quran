@@ -315,7 +315,7 @@ const AiAssistantChat: React.FC<Props> = ({ onClose, audioService }) => {
             <div className={styles.title}>Quran AI Tsirwah</div>
             <div className={styles.subtitleWrapper}>
               <span className={styles.statusIndicator} />
-              <span className={styles.subtitle}>DeepSeek • Tafsir Kemenag</span>
+              <span className={styles.subtitle}>Asisten Tafsir Kemenag RI</span>
             </div>
           </div>
         </div>
@@ -475,7 +475,7 @@ const AiAssistantChat: React.FC<Props> = ({ onClose, audioService }) => {
           </button>
         </form>
         <div className={styles.disclaimer}>
-          Quran Tsirwah AI • DeepSeek & Tafsir Kemenag RI
+          Quran Tsirwah AI • Rujukan Tafsir Kemenag RI
         </div>
       </footer>
     </div>
