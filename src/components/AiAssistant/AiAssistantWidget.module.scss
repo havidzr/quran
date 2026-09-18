@@ -97,8 +97,8 @@
 }
 
 .chatWindow {
-  width: 380px;
-  height: 580px;
+  width: 390px;
+  height: 590px;
   max-height: calc(100vh - 120px);
   max-width: calc(100vw - 32px);
   background-color: var(--color-background-default);
@@ -111,7 +111,7 @@
 
   @include breakpoints.smallerThanTablet {
     width: calc(100vw - 32px);
-    height: 72vh;
+    height: 75vh;
   }
 }
 
@@ -310,6 +310,7 @@
     color: #ffffff;
     border-bottom-right-radius: 4px;
     box-shadow: 0 2px 8px rgba(2, 152, 154, 0.25);
+    white-space: pre-wrap;
   }
 }
 
@@ -339,13 +340,184 @@
 }
 
 .bubble {
-  max-width: 84%;
-  padding: 10px 14px;
+  max-width: 86%;
+  padding: 12px 16px;
   border-radius: 16px;
-  line-height: 1.5;
+  line-height: 1.6;
   font-size: 0.92rem;
-  white-space: pre-wrap;
   word-break: break-word;
+}
+
+.messageContent {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.emptyLine {
+  height: 6px;
+}
+
+.textLine {
+  line-height: 1.6;
+}
+
+.boldText {
+  font-weight: 700;
+  color: var(--color-text-default);
+}
+
+.arabicVerse {
+  font-family: 'UthmanicHafs', 'Amiri', 'Traditional Arabic', 'Scheherazade New', serif;
+  font-size: 1.35rem;
+  line-height: 2.2;
+  direction: rtl;
+  text-align: right;
+  padding: 10px 14px;
+  margin: 6px 0;
+  background-color: rgba(2, 152, 154, 0.06);
+  border-right: 4px solid #02989a;
+  border-radius: 8px;
+  color: var(--color-text-default);
+}
+
+.quoteBlock {
+  margin: 6px 0;
+  padding: 8px 12px;
+  border-left: 3px solid #02989a;
+  background-color: var(--color-background-alternative-faded);
+  border-radius: 0 8px 8px 0;
+  font-style: italic;
+  font-size: 0.88rem;
+  color: var(--color-text-default);
+  line-height: 1.55;
+}
+
+.verseLinkGroup {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 4px 0;
+}
+
+.verseLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  background-color: rgba(2, 152, 154, 0.1);
+  color: #01787a;
+  font-weight: 600;
+  font-size: 0.82rem;
+  border-radius: 6px;
+  text-decoration: none;
+  border: 1px solid rgba(2, 152, 154, 0.3);
+  transition: all 0.2s ease;
+
+  &:hover {
+    background-color: #02989a;
+    color: #ffffff;
+    box-shadow: 0 2px 6px rgba(2, 152, 154, 0.35);
+  }
+}
+
+.playAudioBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  background-color: #02989a;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s, background-color 0.2s;
+
+  &:hover {
+    background-color: #017173;
+    transform: scale(1.04);
+  }
+
+  &:active {
+    transform: scale(0.96);
+  }
+}
+
+.bubbleFooter {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid var(--color-borders-hairline);
+}
+
+.copyButton {
+  background: transparent;
+  border: none;
+  font-size: 0.76rem;
+  color: var(--color-text-faded);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+
+  &:hover {
+    color: #02989a;
+    background-color: rgba(2, 152, 154, 0.08);
+  }
+}
+
+.followUpCard {
+  margin-top: 12px;
+  padding: 10px 12px;
+  background-color: rgba(2, 152, 154, 0.04);
+  border: 1px dashed rgba(2, 152, 154, 0.35);
+  border-radius: 12px;
+}
+
+.followUpLabel {
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: #02989a;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.followUpList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.followUpButton {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 7px 10px;
+  font-size: 0.8rem;
+  background-color: var(--color-background-elevated);
+  border: 1px solid var(--color-borders-hairline);
+  border-radius: 8px;
+  color: var(--color-text-default);
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: #02989a;
+    color: #02989a;
+    background-color: #ebf9fa;
+    transform: translateX(3px);
+  }
 }
 
 .typingBubble {

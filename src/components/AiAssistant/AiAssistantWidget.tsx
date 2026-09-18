@@ -21,7 +21,7 @@ const AiAssistantWidget = () => {
     >
       {isOpen ? (
         <div className={styles.chatWindow}>
-          <AiAssistantChat onClose={() => setIsOpen(false)} />
+          <AiAssistantChat onClose={() => setIsOpen(false)} audioService={audioService} />
         </div>
       ) : (
         <button

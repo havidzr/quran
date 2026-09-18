@@ -13,6 +13,7 @@ type Message = {
 
 type Props = {
   onClose: () => void;
+  audioService?: any;
 };
 
 const SUGGESTIONS = [
@@ -22,10 +23,169 @@ const SUGGESTIONS = [
   { label: 'Keutamaan Surah Al-Mulk', query: 'Apa saja keutamaan membaca Surah Al-Mulk setiap malam?' },
 ];
 
-const AiAssistantChat: React.FC<Props> = ({ onClose }) => {
+// Helper parsing dan rendering teks dengan format Al-Quran
+const FormattedMessage: React.FC<{
+  content: string;
+  onPlayAyah?: (surah: number, ayah: number) => void;
+  onSelectFollowUp?: (q: string) => void;
+}> = ({ content, onPlayAyah, onSelectFollowUp }) => {
+  // Ekstrak Rekomendasi Lanjutan jika ada di akhir pesan
+  let mainContent = content;
+  const followUps: string[] = [];
+
+  const recIndex = content.indexOf('Rekomendasi Lanjutan:');
+  if (recIndex !== -1) {
+    mainContent = content.slice(0, recIndex).trim();
+    const followUpSection = content.slice(recIndex);
+    const lines = followUpSection.split('\n');
+    for (const line of lines) {
+      const match = line.match(/^[-*•]\s*\[?([^\]\n]+)\]?/);
+      if (match && match[1] && !match[1].toLowerCase().includes('rekomendasi')) {
+        followUps.push(match[1].trim());
+      }
+    }
+  }
+
+  // Pisahkan konten per baris
+  const lines = mainContent.split('\n');
+
+  const renderFormattedLine = (line: string, lineIdx: number) => {
+    const trimmed = line.trim();
+    if (!trimmed) return <div key={lineIdx} className={styles.emptyLine} />;
+
+    // Cek apakah teks didominasi huruf Arab
+    const arabicMatch = trimmed.match(/[\u0600-\u06FF]/g);
+    const isArabicVerse = arabicMatch && arabicMatch.length > 8 && !trimmed.startsWith('>') && !trimmed.startsWith('**');
+
+    if (isArabicVerse) {
+      return (
+        <div key={lineIdx} className={styles.arabicVerse} dir="rtl">
+          {trimmed}
+        </div>
+      );
+    }
+
+    // Cek apakah kutipan terjemahan (> "...")
+    if (trimmed.startsWith('>')) {
+      const quoteText = trimmed.replace(/^>\s*/, '').replace(/^"|"$/g, '');
+      return (
+        <blockquote key={lineIdx} className={styles.quoteBlock}>
+          "{quoteText}"
+        </blockquote>
+      );
+    }
+
+    // Parsing teks inline: bold, markdown link, dan tombol play audio
+    const parts: React.ReactNode[] = [];
+    let remaining = line;
+    let keyIdx = 0;
+
+    // Pola mencari [Teks Link](URL) atau **Bold**
+    const inlineRegex = /(\*\*([^*]+)\*\*|\[([^\]]+)\]\(([^)]+)\))/g;
+    let lastIndex = 0;
+    let match;
+
+    while ((match = inlineRegex.exec(remaining)) !== null) {
+      // Teks biasa sebelum match
+      if (match.index > lastIndex) {
+        parts.push(remaining.substring(lastIndex, match.index));
+      }
+
+      if (match[2]) {
+        // **Bold**
+        parts.push(<strong key={keyIdx++} className={styles.boldText}>{match[2]}</strong>);
+      } else if (match[3] && match[4]) {
+        // [Link](url)
+        const linkText = match[3];
+        const linkUrl = match[4];
+
+        // Cek apakah link mengarah ke ayat (/chapter/verse)
+        const verseMatch = linkUrl.match(/\/(\d{1,3})\/(\d{1,3})/);
+        const chapterNum = verseMatch ? parseInt(verseMatch[1], 10) : null;
+        const ayahNum = verseMatch ? parseInt(verseMatch[2], 10) : null;
+
+        parts.push(
+          <span key={keyIdx++} className={styles.verseLinkGroup}>
+            <a
+              href={linkUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.verseLink}
+              title={`Buka ${linkText} di Mushaf`}
+            >
+              <span>{linkText}</span>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                <polyline points="15 3 21 3 21 9" />
+                <line x1="10" y1="14" x2="21" y2="3" />
+              </svg>
+            </a>
+            {chapterNum && ayahNum && onPlayAyah && (
+              <button
+                type="button"
+                onClick={() => onPlayAyah(chapterNum, ayahNum)}
+                className={styles.playAudioBtn}
+                title={`Dengarkan Tilawah QS. ${chapterNum}:${ayahNum}`}
+              >
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                  <polygon points="5 3 19 12 5 21 5 3" />
+                </svg>
+                <span>Putar</span>
+              </button>
+            )}
+          </span>
+        );
+      }
+
+      lastIndex = inlineRegex.lastIndex;
+    }
+
+    if (lastIndex < remaining.length) {
+      parts.push(remaining.substring(lastIndex));
+    }
+
+    return (
+      <div key={lineIdx} className={styles.textLine}>
+        {parts}
+      </div>
+    );
+  };
+
+  return (
+    <div className={styles.messageContent}>
+      {lines.map((l, i) => renderFormattedLine(l, i))}
+
+      {followUps.length > 0 && onSelectFollowUp && (
+        <div className={styles.followUpCard}>
+          <div className={styles.followUpLabel}>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
+            </svg>
+            <span>Pertanyaan Lanjutan:</span>
+          </div>
+          <div className={styles.followUpList}>
+            {followUps.map((q, idx) => (
+              <button
+                key={idx}
+                type="button"
+                onClick={() => onSelectFollowUp(q)}
+                className={styles.followUpButton}
+              >
+                ✦ {q}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+const AiAssistantChat: React.FC<Props> = ({ onClose, audioService }) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
   const messageEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = useCallback(() => {
@@ -35,6 +195,31 @@ const AiAssistantChat: React.FC<Props> = ({ onClose }) => {
   useEffect(() => {
     scrollToBottom();
   }, [messages, isLoading, scrollToBottom]);
+
+  const handlePlayAyah = useCallback(
+    (surah: number, ayahNumber: number) => {
+      if (audioService) {
+        audioService.send({
+          type: 'PLAY_AYAH',
+          surah,
+          ayahNumber,
+        });
+      }
+    },
+    [audioService],
+  );
+
+  const handleCopy = useCallback(async (id: string, text: string) => {
+    try {
+      if (navigator.clipboard) {
+        await navigator.clipboard.writeText(text);
+        setCopiedId(id);
+        setTimeout(() => setCopiedId(null), 2000);
+      }
+    } catch {
+      // Abaikan jika clipboard diblokir
+    }
+  }, []);
 
   const handleSend = useCallback(
     async (textToSend: string) => {
@@ -130,7 +315,7 @@ const AiAssistantChat: React.FC<Props> = ({ onClose }) => {
             <div className={styles.title}>Quran AI Tsirwah</div>
             <div className={styles.subtitleWrapper}>
               <span className={styles.statusIndicator} />
-              <span className={styles.subtitle}>Tafsir Kemenag RI</span>
+              <span className={styles.subtitle}>DeepSeek • Tafsir Kemenag</span>
             </div>
           </div>
         </div>
@@ -205,7 +390,46 @@ const AiAssistantChat: React.FC<Props> = ({ onClose }) => {
                   </svg>
                 </div>
               )}
-              <div className={styles.bubble}>{m.content}</div>
+              <div className={styles.bubble}>
+                {m.role === 'assistant' ? (
+                  <>
+                    <FormattedMessage
+                      content={m.content}
+                      onPlayAyah={handlePlayAyah}
+                      onSelectFollowUp={handleSend}
+                    />
+                    {m.content && !isLoading && (
+                      <div className={styles.bubbleFooter}>
+                        <button
+                          type="button"
+                          onClick={() => handleCopy(m.id, m.content)}
+                          className={styles.copyButton}
+                          title="Salin Pesan"
+                        >
+                          {copiedId === m.id ? (
+                            <>
+                              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2.5">
+                                <polyline points="20 6 9 17 4 12" />
+                              </svg>
+                              <span style={{ color: '#10b981' }}>Tersalin!</span>
+                            </>
+                          ) : (
+                            <>
+                              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                              </svg>
+                              <span>Salin</span>
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  m.content
+                )}
+              </div>
             </div>
           ))
         )}
@@ -251,7 +475,7 @@ const AiAssistantChat: React.FC<Props> = ({ onClose }) => {
           </button>
         </form>
         <div className={styles.disclaimer}>
-          Quran Tsirwah AI • Rujukan Tafsir Kemenag RI
+          Quran Tsirwah AI • DeepSeek & Tafsir Kemenag RI
         </div>
       </footer>
     </div>
