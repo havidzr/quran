@@ -16,6 +16,10 @@ type Props = {
   audioService?: any;
 };
 
+const STORAGE_KEY = 'quran_tsirwah_ai_history';
+const MAX_HISTORY_SAVED = 40; // Simpan 40 pesan terakhir di browser
+const MAX_CONTEXT_SENT = 8;   // Kirim 8 pesan terakhir ke API agar hemat token & cepat
+
 const SUGGESTIONS = [
   { label: 'Tafsir Surah Al-Fatihah', query: 'Jelaskan tafsir singkat dan keutamaan Surah Al-Fatihah' },
   { label: 'Doa untuk kedua orang tua', query: 'Apa ayat dan doa di Al-Quran tentang berbakti kepada kedua orang tua?' },
@@ -185,8 +189,45 @@ const AiAssistantChat: React.FC<Props> = ({ onClose, audioService }) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadedFromStorage, setIsLoadedFromStorage] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const messageEndRef = useRef<HTMLDivElement>(null);
+
+  // 1. Ambil riwayat chat pengunjung dari localStorage saat pertama kali dibuka
+  useEffect(() => {
+    try {
+      if (typeof window !== 'undefined') {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setMessages(parsed);
+          }
+        }
+      }
+    } catch (err) {
+      // Abaikan jika storage disabled/private mode
+    } finally {
+      setIsLoadedFromStorage(true);
+    }
+  }, []);
+
+  // 2. Simpan setiap perubahan riwayat chat ke localStorage browser
+  useEffect(() => {
+    if (!isLoadedFromStorage) return;
+    try {
+      if (typeof window !== 'undefined') {
+        if (messages.length > 0) {
+          const trimmedHistory = messages.slice(-MAX_HISTORY_SAVED);
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(trimmedHistory));
+        } else {
+          localStorage.removeItem(STORAGE_KEY);
+        }
+      }
+    } catch (err) {
+      // Abaikan jika kuota storage penuh
+    }
+  }, [messages, isLoadedFromStorage]);
 
   const scrollToBottom = useCallback(() => {
     messageEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -217,7 +258,7 @@ const AiAssistantChat: React.FC<Props> = ({ onClose, audioService }) => {
         setTimeout(() => setCopiedId(null), 2000);
       }
     } catch {
-      // Abaikan jika clipboard diblokir
+      // Abaikan
     }
   }, []);
 
@@ -238,10 +279,13 @@ const AiAssistantChat: React.FC<Props> = ({ onClose, audioService }) => {
       setIsLoading(true);
 
       try {
+        // Ambil konteks beberapa chat terakhir agar respon cepat dan hemat kuota
+        const recentContext = updatedMessages.slice(-MAX_CONTEXT_SENT);
+
         const res = await fetch('/api/chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ messages: updatedMessages }),
+          body: JSON.stringify({ messages: recentContext }),
         });
 
         if (!res.ok) {
@@ -299,7 +343,16 @@ const AiAssistantChat: React.FC<Props> = ({ onClose, audioService }) => {
   };
 
   const handleResetChat = () => {
-    setMessages([]);
+    // Konfirmasi sebelum menghapus agar tidak terhapus tak sengaja
+    const confirmed = window.confirm('Mulai percakapan baru dan bersihkan riwayat obrolan?');
+    if (confirmed) {
+      setMessages([]);
+      try {
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem(STORAGE_KEY);
+        }
+      } catch (_) {}
+    }
   };
 
   return (
@@ -326,14 +379,12 @@ const AiAssistantChat: React.FC<Props> = ({ onClose, audioService }) => {
               type="button"
               onClick={handleResetChat}
               className={styles.actionButton}
-              title="Mulai Percakapan Baru"
-              aria-label="Mulai Percakapan Baru"
+              title="Bersihkan Riwayat & Mulai Baru"
+              aria-label="Bersihkan Riwayat & Mulai Baru"
             >
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
-                <path d="M21 3v5h-5" />
-                <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
-                <path d="M8 16H3v5" />
+                <polyline points="1 4 1 10 7 10" />
+                <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
               </svg>
             </button>
           )}
