@@ -5,55 +5,108 @@ import fs from 'fs';
 import path from 'path';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
+export const config = {
+  maxDuration: 60,
+};
+
 const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY || '';
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
 
 const BASE_SYSTEM_PROMPT = `Kamu adalah "Quran Tsirwah AI", asisten cerdas tafsir Al-Qur'an dan khazanah Islam resmi dari Tsirwah Pesantren Digital.
-Tugas utama kamu adalah membimbing, menjawab pertanyaan, dan menguraikan kisah/hukum/hikmah Al-Qur'an secara MENDALAM, AKURAT, dan BERBOBOT setara kajian ulama pesantren Ahlussunnah wal Jama'ah (Nahdlatul Ulama).
+Tugas utama kamu adalah membimbing, menjawab pertanyaan, dan menguraikan khazanah/kisah/hukum Al-Qur'an secara MENDALAM, AKURAT, dan BERBOBOT setara kajian ulama pesantren Ahlussunnah wal Jama'ah (Nahdlatul Ulama).
 
-Rujukan Utama Kamu:
+Rujukan Utama:
 - Tafsir Kementerian Agama RI (Tafsir Ringkas & Tafsir Tahlili)
 - Kitab Tafsir Mu'tabar: Tafsir Ibnu Katsir, Tafsir Jalalain, Tafsir At-Thabari, dan Tafsir Al-Qurthubi.
 
-PEDOMAN KUALITAS KONTEN & FORMAT (WAJIB DIIKUTI SECARA KETAT):
+PEDOMAN KUALITAS & KETELITIAN (WAJIB DIIKUTI SECARA KETAT):
 
-1. Bobot Penjelasan (Jangan Dangkal / Jangan Basa-Basi Umum):
-   - Jika ditanya kisah/sejarah: Uraikan konteks asbabun nuzul, latar geografis/sosial, intrik dakwah para nabi, bentuk penyimpangan kaum terdahulu, dan detail bentuk azab/pertolongan Allah.
-   - Jika ditanya hukum/akhlak: Jelaskan makna lafaz (analisis bahasa/balaghah), pendapat mufassirin muktabar, dan korelasinya dengan kehidupan nyata modern.
-   - Hindari jawaban yang terlalu singkat atau terasa normatif. Berikan wawasan yang menambah ilmu dan menggetarkan hati (tadabbur).
+1. Ketepatan Surat & Nomor Ayat (KRUSIAL):
+   - JANGAN PERNAH salah mengidentifikasi atau menukar nama surat dan nomor ayat.
+   - Contoh: Ayat "قَالَ يَا قَوْمِ أَرَأَيْتُمْ إِن كُنتُ عَلَىٰ بَيِّنَةٍ مِّن رَّبِّي..." adalah SURAH HUD AYAT 88, BUKAN Al-A'raf.
+   - Pastikan teks Arab, nomor ayat, dan nama surat 100% cocok.
 
-2. Teks Asli Ayat Al-Qur'an (WAJIB):
-   - Setiap kali mengutip ayat, WAJIB menuliskan teks ayat asli dalam BAHASA ARAB BERHARAKAT LENGKAP (Rasm Uthmani) yang indah dan benar.
+2. Kelengkapan Khazanah Sejarah (Contoh: Negeri Madyan):
+   - Jika ditanya tentang suatu tempat/kaum, sampaikan seluruh dimensi sejarah Al-Qur'an terkait secara utuh:
+     * Negeri Madyan mencakup 2 peristiwa besar:
+       1) Kisah dakwah Nabi Syu'aib AS & azab atas kaum Madyan yang syirik serta curang dalam takaran/timbangan (QS. Hud: 84–95, QS. Al-A'raf: 85–93).
+       2) Kisah hijrah Nabi Musa AS ke mata air Madyan setelah melarikan diri dari Fir'aun, menolong 2 putri shalihah, hingga menikah dan menetap di Madyan (QS. Al-Qashash: 22–28).
 
-3. Tautan Link ke Mushaf Tsirwah (WAJIB):
-   - Tepat di bawah terjemahan, cantumkan tautan ke mushaf dengan format:
+3. Format Jawaban Baku (Padat, Mendalam, Bernas):
+   - Awali dengan salam hangat dan pengantar ringkas 1-2 kalimat (jangan bertele-tele agar jawaban tuntas tanpa terpotong).
+   - Sajikan 2 poin utama dengan format:
+     **[Nomor]. [Judul Pembahasan]**
+
+     [Teks Ayat Al-Qur'an Arab Berharakat Lengkap - Rasm Uthmani]
+
+     > "[Terjemahan resmi ayat dalam bahasa Indonesia]"
      👉 [Buka QS. NamaSurat: NomorAyat](/<nomorSurat>/<nomorAyat>)
-     Contoh: 👉 [Buka QS. Hud: 85](/11/85) atau 👉 [Buka QS. Asy-Syu'ara: 189](/26/189).
 
-4. Struktur Baku Setiap Poin Pembahasan:
-   Awali jawaban dengan salam dan pengantar hikmah yang hangat, lalu sajikan 2–3 poin utama dengan struktur rapi:
+     [Uraian Tafsir & Tadabbur: Rujukan Ibnu Katsir/Kemenag, asbabun nuzul/latar kisah, dan hikmahnya secara padat dan berbobot]
 
-   **[Nomor]. [Judul Pembahasan yang Kuat]**
+4. Kesimpulan & Ibrah:
+   - Rangkuman pesan moral dan spiritual yang aplikatif bagi kehidupan.
 
-   [Teks Ayat Al-Qur'an Arab Berharakat Lengkap]
-
-   > "[Terjemahan resmi ayat dalam bahasa Indonesia]"
-   👉 [Buka QS. NamaSurat: NomorAyat](/<nomorSurat>/<nomorAyat>)
-
-   [Uraian Tafsir & Tadabbur Mendalam: Jelaskan konteks ayat, apa kata Ibnu Katsir/Kemenag, detail kisah, dan pelajaran pentingnya]
-
-5. Kesimpulan (Ibrah):
-   - Berikan rangkuman inti pesan moral dan spiritual yang aplikatif bagi pembaca.
-
-6. Rekomendasi Lanjutan (Wajib di Baris Paling Akhir):
-   - Tuliskan tepat 2 pertanyaan lanjutan yang menarik dan memancing tadabbur lebih dalam:
+5. Rekomendasi Lanjutan (Wajib di Baris Paling Akhir):
+   - Tuliskan tepat 2 pertanyaan lanjutan untuk memicu tadabbur:
      Rekomendasi Lanjutan:
-     - [Pertanyaan mendalam 1]
-     - [Pertanyaan mendalam 2]
+     - [Pertanyaan lanjutan 1]
+     - [Pertanyaan lanjutan 2]
 
-7. Adab & Karakter:
-   - Nada bicara: Menyejukkan hati, santun, ilmiah, berwibawa, dan menentramkan.
+6. Adab & Karakter:
+   - Santun, berwibawa, menyejukkan hati, dan menjaga citra ilmiah Tsirwah Digital (tanpa menyebut vendor pihak ketiga).
 `;
+
+// Kamus Tematik Sejarah & Kisah Al-Qur'an untuk Konteks Otomatis
+const THEMATIC_TOPICS: Array<{
+  keywords: string[];
+  surah: number;
+  ayah: number;
+  note: string;
+}> = [
+  {
+    keywords: ['madyan', 'syuaib', 'syu\'aib', 'aikah'],
+    surah: 11,
+    ayah: 84,
+    note: "Kisah Nabi Syu'aib & Penduduk Madyan (QS. Hud: 84-95). Catatan penting: Madyan juga merupakan tempat hijrah Nabi Musa AS saat bertemu 2 putri di mata air Madyan (QS. Al-Qashash: 22-28).",
+  },
+  {
+    keywords: ['kahfi', 'ashabul kahfi', 'gua'],
+    surah: 18,
+    ayah: 10,
+    note: "Kisah Pemuda Ashabul Kahfi (QS. Al-Kahf: 9-26).",
+  },
+  {
+    keywords: ['dzulkarnain', 'zulkarnain', 'yajuj', "ya'juj"],
+    surah: 18,
+    ayah: 83,
+    note: "Kisah Zulkarnain dan Ya'juj Ma'juj (QS. Al-Kahf: 83-98).",
+  },
+  {
+    keywords: ['luqman', 'wasiat luqman'],
+    surah: 31,
+    ayah: 13,
+    note: "Wasiat Luqman Al-Hakim kepada anaknya (QS. Luqman: 12-19).",
+  },
+  {
+    keywords: ['maryam', 'isa lahir'],
+    surah: 19,
+    ayah: 16,
+    note: "Kisah Maryam dan Kelahiran Nabi Isa AS (QS. Maryam: 16-34).",
+  },
+  {
+    keywords: ['yusuf', 'sumur', 'zulaikha'],
+    surah: 12,
+    ayah: 19,
+    note: "Kisah Nabi Yusuf AS (QS. Yusuf).",
+  },
+  {
+    keywords: ['firaun', 'laut merah', 'tongkat musa'],
+    surah: 20,
+    ayah: 24,
+    note: "Dakwah Nabi Musa AS kepada Fir'aun (QS. Thaha: 24-79 & QS. Asy-Syu'ara: 10-68).",
+  },
+];
 
 function getLocalTafsirContext(queryText: string): string {
   try {
@@ -63,6 +116,7 @@ function getLocalTafsirContext(queryText: string): string {
     const qsNumMatch = textLower.match(/(?:surat|surah|qs|q\.s\.?)\s*(\d{1,3})(?:[:\s]+ayat\s*(\d{1,3})|[:\s]+(\d{1,3}))?/i);
     let matchedSurahId: number | null = null;
     let matchedAyah: string | null = null;
+    let thematicNote = '';
 
     if (qsNumMatch && qsNumMatch[1]) {
       const num = parseInt(qsNumMatch[1], 10);
@@ -92,8 +146,19 @@ function getLocalTafsirContext(queryText: string): string {
       }
     }
 
+    // 3. Pencarian Tematik Sejarah / Kisah Tokoh
+    if (!matchedSurahId) {
+      for (const topic of THEMATIC_TOPICS) {
+        if (topic.keywords.some((kw) => textLower.includes(kw))) {
+          matchedSurahId = topic.surah;
+          matchedAyah = String(topic.ayah);
+          thematicNote = topic.note;
+          break;
+        }
+      }
+    }
+
     if (matchedSurahId) {
-      // Prioritaskan Tafsir Tahlili jika ada untuk konten mendalam, fallback ke Kemenag Ringkas
       const tahliliPath = path.join(process.cwd(), 'public', 'data', 'tafsir', 'tahlili', `${matchedSurahId}.json`);
       const kemenagPath = path.join(process.cwd(), 'public', 'data', 'tafsir', 'kemenag', `${matchedSurahId}.json`);
 
@@ -105,11 +170,17 @@ function getLocalTafsirContext(queryText: string): string {
       }
 
       if (tafsirData) {
+        let result = '';
+        if (thematicNote) {
+          result += `[Catatan Tematik Khazanah Al-Qur'an]: ${thematicNote}\n\n`;
+        }
         if (matchedAyah && tafsirData[matchedAyah]) {
-          return `[Tafsir Kemenag RI Surah ${matchedSurahId} Ayat ${matchedAyah}]:\n${tafsirData[matchedAyah]}`;
+          result += `[Tafsir Kemenag RI Surah ${matchedSurahId} Ayat ${matchedAyah}]:\n${tafsirData[matchedAyah]}`;
+          return result;
         }
         const sample = Object.entries(tafsirData).slice(0, 3).map(([a, txt]) => `Ayat ${a}: ${txt}`).join('\n');
-        return `[Tafsir Kemenag RI Surah ${matchedSurahId}]:\n${sample}`;
+        result += `[Tafsir Kemenag RI Surah ${matchedSurahId}]:\n${sample}`;
+        return result;
       }
     }
   } catch (err) {
@@ -142,7 +213,8 @@ async function streamDeepSeek(
       model: 'deepseek-chat',
       messages: apiMessages,
       stream: true,
-      temperature: 0.3, // Lebih presisi, akademis, dan terarah
+      temperature: 0.3,
+      max_tokens: 2500,
     }),
   });
 
@@ -243,7 +315,7 @@ export default async function handler(req: any, res: any) {
 
     let systemPrompt = BASE_SYSTEM_PROMPT;
     if (localTafsir) {
-      systemPrompt += `\n\n[Konteks Naskah Tafsir Kemenag Terkait]:\n${localTafsir}\nSilakan jadikan naskah resmi di atas sebagai rujukan mendalam.\n`;
+      systemPrompt += `\n\n[Konteks Naskah Tafsir Kemenag & Khazanah Tematik]:\n${localTafsir}\nSilakan jadikan rujukan resmi di atas sebagai pedoman akurat nama surah, ayat, dan tafsirnya.\n`;
     }
 
     // Prioritas Utama: DeepSeek (Cepat, Tuntas, Rapi, Format Disiplin)
