@@ -1,3 +1,5 @@
+if (typeof window === 'undefined') { try { const b = require('buffer'); if (!b.SlowBuffer) { b.SlowBuffer = b.Buffer; } } catch (_) {} }
+
 import React, { useEffect } from 'react';
 
 import { DirectionProvider } from '@radix-ui/react-direction';

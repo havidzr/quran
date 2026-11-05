@@ -2,6 +2,9 @@
 /* eslint-disable max-lines */
 /* eslint-disable react-func/max-lines-per-function */
 /* eslint-disable no-param-reassign */
+const buffer = require('buffer');
+if (!buffer.SlowBuffer) { buffer.SlowBuffer = buffer.Buffer; }
+
 const path = require('path');
 
 const withBundleAnalyzer = require('@next/bundle-analyzer')({
