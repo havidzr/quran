@@ -2,6 +2,25 @@
 import fs from 'fs';
 import path from 'path';
 
+// In-memory cache agar tidak membaca berkas disk JSON secara berulang
+const tafsirFileCache = new Map<string, Record<string, string>>();
+
+function getTafsirData(filePath: string): Record<string, string> | null {
+  if (tafsirFileCache.has(filePath)) {
+    return tafsirFileCache.get(filePath)!;
+  }
+  if (fs.existsSync(filePath)) {
+    try {
+      const parsed = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+      tafsirFileCache.set(filePath, parsed);
+      return parsed;
+    } catch {
+      return null;
+    }
+  }
+  return null;
+}
+
 export default function handler(req, res) {
   const { tafsirId, verseKey } = req.query;
 
@@ -28,8 +47,8 @@ export default function handler(req, res) {
           'kemenag',
           `${chapter}.json`,
         );
-        if (fs.existsSync(kemenagPath)) {
-          const kemenagData = JSON.parse(fs.readFileSync(kemenagPath, 'utf8'));
+        const kemenagData = getTafsirData(kemenagPath);
+        if (kemenagData) {
           text = kemenagData[verse] || '';
         }
       } else if (tafsirId === 'id-tafsir-tahlili') {
@@ -41,8 +60,8 @@ export default function handler(req, res) {
           'tahlili',
           `${chapter}.json`,
         );
-        if (fs.existsSync(tahliliPath)) {
-          const tahliliData = JSON.parse(fs.readFileSync(tahliliPath, 'utf8'));
+        const tahliliData = getTafsirData(tahliliPath);
+        if (tahliliData) {
           text = tahliliData[verse] || '';
         }
       }

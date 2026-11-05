@@ -297,9 +297,42 @@ async function streamGemini(
   res.end();
 }
 
+// Rate Limiter in-memory untuk mencegah pemborosan token / bot abuse
+const rateLimitMap = new Map<string, { count: number; expiresAt: number }>();
+
+function checkRateLimit(ip: string): boolean {
+  const now = Date.now();
+  const windowMs = 60 * 1000; // Jendela 1 menit
+  const maxRequests = 20;     // Maksimal 20 chat per menit per IP
+
+  const record = rateLimitMap.get(ip);
+  if (!record || now > record.expiresAt) {
+    rateLimitMap.set(ip, { count: 1, expiresAt: now + windowMs });
+    return true;
+  }
+
+  if (record.count >= maxRequests) {
+    return false;
+  }
+
+  record.count += 1;
+  return true;
+}
+
 export default async function handler(req: any, res: any) {
   if (req.method !== 'POST') {
     res.status(405).json({ message: 'Method not allowed' });
+    return;
+  }
+
+  // Ambil IP klien untuk rate limiting
+  const rawIp = req.headers['x-forwarded-for'] || req.socket?.remoteAddress || 'unknown';
+  const clientIp = typeof rawIp === 'string' ? rawIp.split(',')[0].trim() : 'unknown';
+
+  if (!checkRateLimit(clientIp)) {
+    res.status(429).json({
+      message: 'Terlalu banyak pertanyaan dalam waktu singkat. Mohon tunggu 1 menit sebelum bertanya kembali.',
+    });
     return;
   }
 

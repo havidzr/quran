@@ -204,6 +204,11 @@ const AiAssistantChat: React.FC<Props> = ({ onClose, audioService }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadedFromStorage, setIsLoadedFromStorage] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  // Optimasi Streaming: Pisahkan teks streaming dari state sessions untuk mencegah UI freeze
+  const [streamingText, setStreamingText] = useState<string>('');
+  const [streamingMessageId, setStreamingMessageId] = useState<string | null>(null);
+
   const messageEndRef = useRef<HTMLDivElement>(null);
 
   // 1. Ambil daftar sesi percakapan dari localStorage saat widget dibuka
@@ -241,11 +246,9 @@ const AiAssistantChat: React.FC<Props> = ({ onClose, audioService }) => {
 
         setSessions(loadedSessions);
 
-        // Jika belum ada sesi sama sekali, langsung buka obrolan baru
         if (loadedSessions.length === 0) {
           setActiveSessionId('new');
         } else {
-          // Jika ada riwayat, buka halaman daftar riwayat sesi (session hub)
           setActiveSessionId(null);
         }
       }
@@ -256,7 +259,7 @@ const AiAssistantChat: React.FC<Props> = ({ onClose, audioService }) => {
     }
   }, []);
 
-  // 2. Simpan setiap pembaruan sesi ke localStorage
+  // 2. Simpan setiap pembaruan sesi ke localStorage HANYA saat sessions berubah (bukan per chunk)
   useEffect(() => {
     if (!isLoadedFromStorage) return;
     try {
@@ -272,15 +275,16 @@ const AiAssistantChat: React.FC<Props> = ({ onClose, audioService }) => {
   const activeSession = sessions.find((s) => s.id === activeSessionId) || null;
   const currentMessages = activeSession ? activeSession.messages : [];
 
-  const scrollToBottom = useCallback(() => {
-    messageEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  const scrollToBottom = useCallback((instant = false) => {
+    messageEndRef.current?.scrollIntoView({ behavior: instant ? 'auto' : 'smooth' });
   }, []);
 
+  // Auto scroll: Gunakan scroll instan saat streaming teks agar browser tidak overload
   useEffect(() => {
     if (activeSessionId) {
-      scrollToBottom();
+      scrollToBottom(Boolean(streamingMessageId));
     }
-  }, [currentMessages, isLoading, activeSessionId, scrollToBottom]);
+  }, [currentMessages.length, streamingText, activeSessionId, streamingMessageId, scrollToBottom]);
 
   const handlePlayAyah = useCallback(
     (surah: number, ayahNumber: number) => {
@@ -305,13 +309,11 @@ const AiAssistantChat: React.FC<Props> = ({ onClose, audioService }) => {
     } catch (_) {}
   }, []);
 
-  // Buat sesi obrolan baru
   const handleStartNewChat = () => {
     setActiveSessionId('new');
     setInput('');
   };
 
-  // Hapus satu sesi tertentu
   const handleDeleteSession = (e: React.MouseEvent, sessionId: string) => {
     e.stopPropagation();
     const confirmed = window.confirm('Hapus riwayat obrolan ini?');
@@ -334,12 +336,10 @@ const AiAssistantChat: React.FC<Props> = ({ onClose, audioService }) => {
         content: trimmed,
       };
 
-      // Tentukan sesi yang sedang dipakai
       let currentSessionId = activeSessionId;
       let existingMessages: Message[] = [];
 
       if (!currentSessionId || currentSessionId === 'new') {
-        // Buat sesi baru
         const newId = `session-${Date.now()}`;
         const newSession: ChatSession = {
           id: newId,
@@ -353,7 +353,6 @@ const AiAssistantChat: React.FC<Props> = ({ onClose, audioService }) => {
         currentSessionId = newId;
         existingMessages = [userMessage];
       } else {
-        // Tambahkan ke sesi yang sudah ada
         const found = sessions.find((s) => s.id === currentSessionId);
         existingMessages = found ? [...found.messages, userMessage] : [userMessage];
         setSessions((prev) =>
@@ -367,6 +366,10 @@ const AiAssistantChat: React.FC<Props> = ({ onClose, audioService }) => {
 
       setInput('');
       setIsLoading(true);
+
+      const aiMessageId = `ai-${Date.now()}`;
+      setStreamingMessageId(aiMessageId);
+      setStreamingText('');
 
       try {
         const recentContext = existingMessages.slice(-MAX_CONTEXT_SENT);
@@ -390,44 +393,45 @@ const AiAssistantChat: React.FC<Props> = ({ onClose, audioService }) => {
         const decoder = new TextDecoder();
         let aiText = '';
 
-        const aiMessage: Message = {
-          id: `ai-${Date.now()}`,
-          role: 'assistant',
-          content: '',
-        };
-
-        // Tambah pesan AI kosong dulu untuk streaming
-        setSessions((prev) =>
-          prev.map((s) =>
-            s.id === currentSessionId
-              ? { ...s, messages: [...s.messages, aiMessage] }
-              : s,
-          ),
-        );
-
         if (reader) {
           let done = false;
+          let lastRenderTime = 0;
+
           while (!done) {
             // eslint-disable-next-line no-await-in-loop
             const result = await reader.read();
             done = result.done;
             if (result.value) {
               aiText += decoder.decode(result.value, { stream: true });
-              setSessions((prev) =>
-                prev.map((s) =>
-                  s.id === currentSessionId
-                    ? {
-                        ...s,
-                        messages: s.messages.map((m) =>
-                          m.id === aiMessage.id ? { ...m, content: aiText } : m,
-                        ),
-                      }
-                    : s,
-                ),
-              );
+
+              // Throttle pembaruan UI minimal setiap 40ms untuk menjamin 60fps tanpa freeze
+              const now = Date.now();
+              if (now - lastRenderTime > 40 || done) {
+                lastRenderTime = now;
+                setStreamingText(aiText);
+              }
             }
           }
         }
+
+        // Streaming selesai: Komit pesan ke state sesi & simpan HANYA SEKALI ke localStorage
+        const completedMessage: Message = {
+          id: aiMessageId,
+          role: 'assistant',
+          content: aiText,
+        };
+
+        setSessions((prev) =>
+          prev.map((s) =>
+            s.id === currentSessionId
+              ? {
+                  ...s,
+                  updatedAt: Date.now(),
+                  messages: [...s.messages, completedMessage],
+                }
+              : s,
+          ),
+        );
       } catch (err: any) {
         const errMessage: Message = {
           id: `err-${Date.now()}`,
@@ -443,6 +447,8 @@ const AiAssistantChat: React.FC<Props> = ({ onClose, audioService }) => {
         );
       } finally {
         setIsLoading(false);
+        setStreamingMessageId(null);
+        setStreamingText('');
       }
     },
     [activeSessionId, isLoading, sessions],
@@ -490,7 +496,6 @@ const AiAssistantChat: React.FC<Props> = ({ onClose, audioService }) => {
         </header>
 
         <div className={styles.sessionsHub}>
-          {/* Tombol Utama: Mulai Obrolan Baru */}
           <button
             type="button"
             onClick={handleStartNewChat}
@@ -513,7 +518,6 @@ const AiAssistantChat: React.FC<Props> = ({ onClose, audioService }) => {
             </svg>
           </button>
 
-          {/* Daftar Kartu Riwayat */}
           <div className={styles.sessionsSectionHeader}>
             <span>Riwayat Sebelumnya ({sessions.length})</span>
           </div>
@@ -632,7 +636,7 @@ const AiAssistantChat: React.FC<Props> = ({ onClose, audioService }) => {
       </header>
 
       <div className={styles.messageList}>
-        {currentMessages.length === 0 ? (
+        {currentMessages.length === 0 && !streamingMessageId ? (
           <div className={styles.emptyStateCard}>
             <div className={styles.welcomeGreeting}>Assalamu'alaikum!</div>
             <p className={styles.welcomeDesc}>
@@ -713,17 +717,28 @@ const AiAssistantChat: React.FC<Props> = ({ onClose, audioService }) => {
           ))
         )}
 
-        {isLoading && currentMessages[currentMessages.length - 1]?.role === 'user' && (
+        {/* Bubble Streaming Dinamis: Mencegah Lag & Freeze */}
+        {streamingMessageId && (
           <div className={classNames(styles.messageLine, styles.aiMessage)}>
             <div className={styles.messageAvatar}>
               <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
               </svg>
             </div>
-            <div className={classNames(styles.bubble, styles.typingBubble)}>
-              <span className={styles.typingDot} />
-              <span className={styles.typingDot} />
-              <span className={styles.typingDot} />
+            <div className={styles.bubble}>
+              {streamingText ? (
+                <FormattedMessage
+                  content={streamingText}
+                  onPlayAyah={handlePlayAyah}
+                  onSelectFollowUp={handleSend}
+                />
+              ) : (
+                <div className={styles.typingBubble}>
+                  <span className={styles.typingDot} />
+                  <span className={styles.typingDot} />
+                  <span className={styles.typingDot} />
+                </div>
+              )}
             </div>
           </div>
         )}
